@@ -1,0 +1,124 @@
+package com.autouploader;
+import javafx.application.Application;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+
+public class loginForm extends Application{
+	public static void main(String[] args) {
+		launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+        // Create a StackPane to enclose the content
+        StackPane stackPane = new StackPane();
+
+        // Create a Rectangle as the background
+        Rectangle background = new Rectangle(400, 400); // Set your desired dimensions
+        background.setFill(Color.WHITE);
+
+
+        VBox root = new VBox(15);
+        //positionling on top from the vertical and horizom
+        root.setAlignment(Pos.CENTER);
+
+        ImageView eyepacslogo = new ImageView(new Image("file:/C:/Auto_Uplaoder/eyepacslogo.png.png"));
+        eyepacslogo.setFitWidth(300);
+        eyepacslogo.setFitHeight(90);
+        root.getChildren().add(eyepacslogo);
+
+     // Create the username field with icon
+        HBox usernameHBox = new HBox(10);
+        usernameHBox.setAlignment(Pos.CENTER);
+        ImageView userIcon = new ImageView(new Image("file:/C:/Auto_Uplaoder/user.png.png"));
+        userIcon.setFitHeight(20);
+        userIcon.setFitWidth(20);
+        TextField userNameField = new TextField();
+        userNameField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        userNameField.setPromptText("Enter username");
+        userNameField.getStyleClass().add("icon-text-field");
+        userIcon.getStyleClass().add("text-field-icon");
+
+        ObservableList<Node> children = usernameHBox.getChildren();
+        children.addAll(userIcon,userNameField );
+        root.getChildren().add(usernameHBox);
+        // Create the password field with icon
+        HBox passwordHBox = new HBox(10);
+        passwordHBox.setAlignment(Pos.CENTER);
+
+        ImageView passwordIcon = new ImageView(new Image("file:/C:/Auto_Uplaoder/pass-icon.png.jpg"));
+        passwordIcon.setFitWidth(20); // Set your desired width
+        passwordIcon.setFitHeight(20); // Set your desired height
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Enter Password");
+        passwordField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        passwordField.getStyleClass().add("icon-text-field");
+        passwordIcon.getStyleClass().add("text-field-icon");
+
+        passwordHBox.getChildren().addAll(passwordIcon,passwordField);
+        root.getChildren().add(passwordHBox);
+
+
+
+        Button loginButton = new Button("Login");
+        loginButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;"); // Orange color
+        
+        root.getChildren().add(loginButton);
+        loginButton.setOnAction(event -> handleLogin(userNameField.getText(), passwordField.getText(), primaryStage));
+        Hyperlink forgetPasswordLink = new Hyperlink("Forget Your password ?");
+        forgetPasswordLink.setStyle("-fx-underline: true;");
+        root.getChildren().add(forgetPasswordLink);
+        stackPane.getChildren().addAll(background, root); // Add the Rectangle and VBox to the StackPane
+
+
+        // Get the screen bounds
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        // Calculate the width and height as 90% of the screen size
+        double width = screenBounds.getWidth() * 0.99;
+        double height = screenBounds.getHeight() * 0.99;
+        // Set up the scene
+        Scene scene = new Scene(stackPane, width, height);
+        scene.getStylesheets().add(getClass().getResource("Style-css.css").toExternalForm());
+        primaryStage.setScene(scene);
+       // primaryStage.setFullScreen(true);
+
+        primaryStage.show();
+    }
+	public void handleLogin(String s1,String userPassword,Stage primaryStage)
+	{
+		if(("Dev Kumar".equals(s1) && ("123".equals(userPassword) ) || ("Krishna Kumar".equals(s1))&&("123".equals(userPassword))))
+		{
+            Dashboard dashbaord =new Dashboard();
+			dashbaord.OpenDashBoard(primaryStage,s1);
+		}
+		else {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Login Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Invalid username or password");
+            alert.showAndWait();
+		}
+	}
+	
+
+
+}

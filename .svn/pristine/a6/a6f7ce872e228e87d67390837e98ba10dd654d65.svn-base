@@ -1,0 +1,547 @@
+package com.autouploader;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.*;
+import javafx.scene.control.Label;
+
+import java.io.File;
+
+public class Dashboard {
+    public Stage stage;
+    //public Pane fixedPane;
+    public Pane fixedPane;
+    public BorderPane borderPane;
+    public ComboBox<Integer> templatesCombobox;
+
+ // Variable to store the default image directory
+    private String defaultImageDirectory = "C:\\Users\\DevChandan\\Downloads";
+
+    private Integer defaultImageAmountInSettingDialog =7;
+
+    public static int selectedValue;
+
+    public void OpenDashBoard(Stage dasBoardStage, String username) {
+        this.stage = dasBoardStage;
+        StackPane dashboardStackPane = new StackPane();
+
+        // Create a BorderPane for the main content
+        BorderPane dashboardRoot = new BorderPane();
+        this.borderPane = dashboardRoot;
+
+        // Create an HBox for the username and shortcut
+        HBox usernameBox = new HBox(13);
+        usernameBox.setAlignment(Pos.TOP_RIGHT);
+       // borderPane.setRight(usernameBox);
+//        dashboardRoot.setRight(usernameBox);
+
+        // Create a label for the username
+        Label usernameLabel = new Label(username);
+
+        // Create a circular box for the shortcut
+        Circle shortcutCircle = new Circle(12); // Set the desired radius
+        shortcutCircle.setFill(Color.GREY); // Set the desired color
+
+        // Create a label for the dynamic shortcut text
+        Label shortcutLabel = new Label(generateShortcut(username));
+        shortcutLabel.setTextFill(Color.WHITE); // Set the desired text color
+        Image shortcutImage = new Image("file:/C:/Auto_Uplaoder/carrot2x.png");
+        ImageView shortCutImageView = new ImageView(shortcutImage);
+        shortCutImageView.setFitWidth(7);
+        shortCutImageView.setFitHeight(10);
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem settingsItem = new MenuItem();
+        MenuItem logoutItem = new MenuItem();
+        // setting action for logout menu
+        logoutItem.setOnAction(event -> {
+            try {
+                handleLogout();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+// Create labels for the context menu
+        Label settingsLabel = new Label("Settings & Preferences");
+        Label logoutLabel = new Label("Logout");
+                settingsItem.setOnAction(e -> {
+                    // Create a dialog for settings
+                    Dialog<Void> settingsDialog = new Dialog<>();
+                    settingsDialog.initStyle(StageStyle.UNDECORATED); // Remove the default close button and dialog ico
+                    settingsDialog.setHeight(280);
+                    settingsDialog.setWidth(400);
+                    settingsDialog.getDialogPane().setStyle("-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: White; -fx-border-width:.5;");
+                    // Center the dialog on the primary stage
+                    // Center the dialog on the scene
+                    Scene currentScene = dashboardStackPane.getScene();
+                    double dialogX =  (currentScene.getWidth() - settingsDialog.getWidth()) / 2;
+                    double dialogY =  (currentScene.getHeight() - settingsDialog.getHeight()) / 2;
+                    settingsDialog.setX(dialogX);
+                    settingsDialog.setY(dialogY);
+
+
+                    // Create UI elements for the settings dialog/// settings dialog
+                   HBox hboxForsettingsLabelandCrossButton=createHeaderHBoxForContextMenu();
+                    Label displayLabel=new Label("Display");
+                    displayLabel.setStyle("-fx-text-fill: orange;");
+                    displayLabel.setFont(Font.font("Arial", FontWeight.BOLD,  14));
+                    /// For the dark mode
+                    Label darkModeLabel = new Label("Toggle Dark Mode");
+                    ToggleSwitch darkModeToggle = new ToggleSwitch();
+                    HBox hboxForLabelandToggleButton=new HBox(75);
+                    hboxForLabelandToggleButton.getChildren().addAll(darkModeLabel,darkModeToggle );
+                    Label imageDirectoryLabel = new Label("Image Directory");
+                    imageDirectoryLabel.setStyle("-fx-text-fill: orange;");
+                    imageDirectoryLabel.setFont(Font.font("Arial", FontWeight.BOLD,  14));
+                    HBox hboxForimageTextfieldandBrowseButton=new HBox(40);
+                    TextField imagePathTextField = new TextField();
+                    // Set the initial value for the image directory path
+                    imagePathTextField.setText(defaultImageDirectory);
+                    Button browseButton = new Button("BROWSE");
+                    browseButton.setStyle("-fx-background-color: orange;-fx-text-fill: white;-fx-background-radius: 5;");
+
+
+                    // Add the EventHandler to the browseButton we are selcting the directory
+                    browseButton.setOnAction(event -> {
+                        DirectoryChooser directoryChooser = new DirectoryChooser();
+                        directoryChooser.setInitialDirectory(new File(getDefaultImageDirectory()));
+
+                        // Show the directory chooser and get the selected directory
+                        File selectedDirectory = directoryChooser.showDialog(null);
+
+                        if (selectedDirectory != null) {
+                            // Update the text field with the selected directory path
+                            imagePathTextField.setText(selectedDirectory.getAbsolutePath());
+                        }
+                    });
+
+                    hboxForimageTextfieldandBrowseButton.getChildren().addAll(imagePathTextField,browseButton);
+                    Label imageAmountLabel = new Label("Default Image Amount Level");
+                    imageAmountLabel.setStyle("-fx-text-fill: orange;");
+                    imageAmountLabel.setFont(Font.font("Arial", FontWeight.BOLD,  14));
+                  //  Slider imageAmountSlider = new Slider(0, 100, 50);
+                    Label templatesLabel = new Label("Prepopulated Templates");
+                     templatesCombobox= new ComboBox<>();
+                    UploadResult uploadResult=new UploadResult();
+                    //uploadResult.displayUpload(stage,borderPane,"upload result",fixedPane,templatesCombobox);
+                   // uploadResult.createAccordion(templatesCombobox);
+                  //  uploadResult.createUpload();
+
+                    templatesCombobox.getItems().addAll( 2, 4,7,8,10,12);
+                    templatesCombobox.setValue(defaultImageAmountInSettingDialog);
+                    // Add a listener to detect when the context menu is hidden
+//                    templatesCombobox.setContextMenu(new ContextMenu());
+//                    templatesCombobox.setOnHidden(event -> handleContextMenuClosed());
+
+                    HBox hBoxdefaultImageAmountLabelAndCombobox=new HBox(60);
+
+                    VBox vboxForUploadPageOnStartup=new VBox(10);
+                    HBox hboxForUploadPageOnStartuplabelandButton=new HBox(40);
+                    Label uploadPageOnStartUpLabel=new Label("Upload page on Startup");
+                    uploadPageOnStartUpLabel.setStyle("-fx-text-fill: orange;");
+                    uploadPageOnStartUpLabel.setFont(Font.font("Arial", FontWeight.BOLD,  14));
+
+                    Label labelForUploadPageOnStartup=new Label("Set Upload as StartUp Page");
+                    ToggleSwitch toggleSwitchForSetOnStartUpPage=new ToggleSwitch();
+                    hboxForUploadPageOnStartuplabelandButton.getChildren().addAll(labelForUploadPageOnStartup,toggleSwitchForSetOnStartUpPage);
+                    vboxForUploadPageOnStartup.getChildren().addAll(uploadPageOnStartUpLabel,hboxForUploadPageOnStartuplabelandButton);
+                   hBoxdefaultImageAmountLabelAndCombobox.getChildren().addAll(templatesLabel,templatesCombobox);
+                    // Set up the layout of the settings dialog
+                    VBox dialogVBox = new VBox(
+                        hboxForsettingsLabelandCrossButton,displayLabel,
+                       hboxForLabelandToggleButton,imageDirectoryLabel,hboxForimageTextfieldandBrowseButton
+                           ,imageAmountLabel,hBoxdefaultImageAmountLabelAndCombobox,vboxForUploadPageOnStartup
+
+                    );
+                   dialogVBox.setSpacing(10);
+                    // Set padding for the entire DialogPane
+                    DialogPane dialogPane = settingsDialog.getDialogPane();
+                    dialogPane.setContent(dialogVBox);
+                    dialogPane.setPadding(new Insets(0)); // Adjust the padding as needed
+
+                    // Show the dialog
+                    settingsDialog.showAndWait();
+
+
+            });
+
+
+///////////////////  SITE
+        //Create the ComboBox and make it not editable
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.setPrefSize(160, 50);
+        comboBox.setEditable(false);  // Set to false so it won't work as a text field
+        comboBox.setVisibleRowCount(3);
+        comboBox.setStyle("-fx-background-color: white;");
+        // Create a TextField for searching
+        TextField searchField = new TextField();
+        searchField.setPromptText("search");
+        //  searchField.setVisible(true);  // Initially visible
+        searchField.setVisible(false);  // Initially invisible
+        // new popup for searching the items
+        Popup popup = new Popup();
+        // list view to show the items present in list
+        ListView<String> listView = new ListView<>();
+        listView.setItems(FXCollections.observableArrayList());
+        popup.getContent().add(listView);
+
+        // Add some sample data to the ComboBox
+        ObservableList<String> items = FXCollections.observableArrayList(
+                "Clinic1", "Clinic2", "Clinic3","Clinic4", "Clinic5", "Clinic6"
+        );
+        /// setting the value to combobox
+        comboBox.setItems(items);
+
+        // Listen for text changes in the TextField for searching
+        searchField.textProperty().addListener((obs, oldText, newText) -> {
+            filterComboBoxItems(comboBox, listView, newText);
+
+            // Calculate the position for the popup
+            double x = dashboardRoot.localToScreen(0, 0).getX();
+            double y = dashboardRoot.localToScreen(0, dashboardRoot.getHeight()).getY();
+
+            // Show the popup below the BorderPane
+            popup.show(dashboardRoot, x, y);
+        });
+        // Add the following listener to make the search field visible when the ComboBox is showing
+        comboBox.showingProperty().addListener((obs, oldShowing, newShowing) -> {
+            if (newShowing) {
+                searchField.setVisible(true);
+            }
+        });
+
+        // Listen for item selection in the custom dropdown
+        listView.setOnMouseClicked(event -> {
+            String selectedItem = listView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                comboBox.getSelectionModel().select(selectedItem);
+                // Hide the search field after selection
+                searchField.setVisible(false);
+                //hide the  poup after selection
+                popup.hide();
+            }
+        });
+
+// Listen for ComboBox action event to toggle the visibility of the search field
+        comboBox.setOnAction(event -> {
+            if (searchField.isVisible()) {
+                searchField.setVisible(false);
+            } else {
+                searchField.setVisible(true);
+                searchField.requestFocus();  // Optional: Set focus to the search field
+            }
+        });
+
+
+        // Listen for ComboBox hiding event to hide the search field
+        comboBox.setOnHidden(event -> {
+            // Do not hide the search field
+            // searchField.setVisible(false);
+            popup.hide();
+        });
+
+        StackPane siteStackPane = new StackPane();
+     //   siteStackPane.setPrefSize(200,300);
+        Label siteLabel = new Label("Clinic Site");
+        siteLabel.setPadding(new Insets(0, 0, 0, 8));
+        siteStackPane.getChildren().addAll(comboBox, siteLabel);
+        siteStackPane.setPadding(new Insets(0, 0, 40, 0));
+        siteStackPane.setAlignment(Pos.TOP_LEFT);
+        VBox vboxForLabelandStackPane=new VBox(90);
+        vboxForLabelandStackPane.setPadding(new Insets(0,0,0,15));
+        vboxForLabelandStackPane.getChildren().addAll(searchField,siteStackPane);
+        //vboxForLabelandStackPane.setPrefSize(200,200);
+        vboxForLabelandStackPane.setMaxWidth(160);//setting the maximum width of vbox
+   // vboxForLabelandStackPane.setStyle("-fx-background-color: white; -fx-border-radius: 2; -fx-border-color: white; -fx-border-width: .5;");
+     //   dashboardRoot.setBottom(siteStackPane);
+        dashboardRoot.setBottom(vboxForLabelandStackPane);
+
+        // Listen for item selection in the custom dropdown
+        listView.setOnMouseClicked(event -> {
+            String selectedItem = listView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                comboBox.getSelectionModel().select(selectedItem);
+                // Do not hide the search field
+                // searchField.setVisible(false);
+                popup.hide();
+            }
+        });
+
+
+
+// Set graphic for menu items
+        settingsItem.setGraphic(settingsLabel);
+        logoutItem.setGraphic(logoutLabel);
+
+        contextMenu.getItems().addAll(settingsItem, new SeparatorMenuItem(), logoutItem);
+
+        shortCutImageView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                // Show context menu only on left-click
+                contextMenu.show(shortCutImageView, event.getScreenX(), event.getScreenY()+15);
+
+            }
+        });
+
+
+
+ HBox hboxForusernameLabelandimage=new HBox(6);
+ hboxForusernameLabelandimage.getChildren().addAll(usernameLabel,shortCutImageView);
+ 
+
+        // Add the components to the usernameBox
+       // usernameBox.getChildren().addAll(createShortcutPane(shortcutCircle, shortcutLabel), hboxForusernameLabelandimage);
+        usernameBox.getChildren().addAll(createShortcutPane(shortcutCircle, shortcutLabel), usernameLabel,shortCutImageView);
+        usernameBox.setPadding(new Insets(12,15,0,0));
+
+        // Set the top of the BorderPane to the VBox
+        dashboardRoot.setTop(usernameBox);
+
+        // Create an ImageView for the Eyepacs logo
+        ImageView eyepacsLogo = new ImageView(new Image("file:/C:/Auto_Uplaoder/eyepacslogo.png.png"));
+
+        eyepacsLogo.setFitHeight(50);
+        eyepacsLogo.setFitWidth(150);
+
+        // Create a VBox to hold the Eyepacs logo and "Add Patient" button
+        VBox logoAndButtonVBox = new VBox(32);
+
+        Pane fixedStackPane=new Pane();
+        fixedStackPane.setPrefSize(1100,600);
+        this.fixedPane=fixedStackPane;
+
+
+        // Set the position of the Pane to create a margin from the left and top
+      fixedPane.setTranslateX(200); // Left margin
+      fixedPane.setTranslateY(50); // Top margin
+      fixedPane.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        // Set the StackPane containing the fixed rectangle to the top of the Dashboard StackPane
+        //StackPane.setAlignment(fixedPane, Pos.TOP_RIGHT);
+        //fixedPane.setVisible(true);
+
+        HBox dashboardButton = createNavigationButton("dashboard_icon.png","Dashboard" , "Dashboard result",fixedPane);
+        HBox uploadButton = createNavigationButton("upload_icon.png","Upload", "Upload result",fixedPane);
+        HBox helpButton = createNavigationButton("help_icons.png","Help" , "Help result",fixedPane);
+        HBox patientsButton = createNavigationButton("patients_icon.png","Patients", "Patients result",fixedPane);
+        logoAndButtonVBox.getChildren().addAll(
+                eyepacsLogo,
+                createAddPatientButton(dasBoardStage,borderPane,"hello",fixedPane),
+                uploadButton,
+                dashboardButton,
+                patientsButton,
+                helpButton
+        );
+       // uploadButton.setOnMouseClicked(event -> setSelectedButton(uploadButton));
+        // Automatically trigger the action for the selected button
+        Platform.runLater(() -> {
+            Button dashboardSectionButton = (Button) uploadButton.getChildren().get(1);
+            dashboardSectionButton.fire();
+        });
+        logoAndButtonVBox.setPadding(new Insets(0,0,0,30));
+        dashboardRoot.setLeft(logoAndButtonVBox);
+        // Add the BorderPane to the Dashboard StackPane
+       dashboardStackPane.getChildren().addAll(dashboardRoot,fixedStackPane);
+        // Get the screen bounds
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        // Calculate the width and height as 90% of the screen size
+        double width = screenBounds.getWidth() * 0.99;
+        double height = screenBounds.getHeight() * 0.99;
+        // Create a layout for the Dashboard scene
+        Scene dashboardScene = new Scene(dashboardStackPane, width, height);
+        dasBoardStage.setScene(dashboardScene);
+        dasBoardStage.show();
+       // primaryStage.setFullScreen(true);
+
+    }
+    private void filterComboBoxItems(ComboBox<String> comboBox, ListView<String> listView, String text) {
+        ObservableList<String> filteredItems = FXCollections.observableArrayList();
+        for (String item : comboBox.getItems()) {
+            if (item.toLowerCase().contains(text.toLowerCase())) {
+                filteredItems.add(item);
+            }
+        }
+        listView.setItems(filteredItems);
+    }
+
+
+    // Method to create navigation buttons for sections like Upload, Dashboard, Patients, and Help
+    private HBox createNavigationButton (String imageName,String buttonText , String result,Pane  fixedRectangleStackPane ) {
+        DashBoardResult dashBoardResult=new DashBoardResult();
+        Button sectionButton = new Button(buttonText);
+        sectionButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        ImageView image = new ImageView(new Image("file:/C:/Auto_Uplaoder/" + imageName));
+        image.setFitWidth(25); // Set your desired width
+        image.setFitHeight(25); // Set your desired height
+        Button addPatient=createAddPatientButton(stage,borderPane,"Add Patient button clicked",fixedRectangleStackPane);
+        if(buttonText.equals("Dashboard"))
+        {
+            sectionButton.setOnAction(event -> dashBoardResult.displayResult(stage,borderPane,result,fixedRectangleStackPane));
+        } else if (buttonText.equalsIgnoreCase("patients")) {
+            PatientsResult patientResult=new PatientsResult();
+            sectionButton.setOnAction(event->patientResult.displayPatientResult(stage,borderPane,result,fixedRectangleStackPane));
+            //sectionButton.setOnMouseClicked(event->sectionButton.setStyle("-fx-background-color: orange; -fx-text-fill: white; -fx-border-color: transparent;"));
+
+        }
+        else if(buttonText.equalsIgnoreCase("Help"))
+        {
+            HelpResult helpResult=new HelpResult();
+            sectionButton.setOnAction(event->helpResult.displayPatientResult(stage,borderPane,result,fixedRectangleStackPane));
+        }
+
+
+        else if(buttonText.equalsIgnoreCase("upload"))
+        {
+
+            UploadResult uploadResult=new UploadResult(
+            		);
+            sectionButton.setOnAction(event->uploadResult.displayUpload(stage,borderPane,result,fixedRectangleStackPane,selectedValue));
+
+        }
+        HBox hboxForImageAndButton = new HBox(5); // Adjust spacing as needed
+       // hboxForImageAndButton.setAlignment(Pos.CENTER);
+        hboxForImageAndButton.getChildren().addAll(image,sectionButton);
+
+        return hboxForImageAndButton;
+    }
+    //// Method to handle logout and switch to the login page
+
+    /***
+     * handling the logout
+     * @throws Exception
+     */
+    private void handleLogout() throws Exception {
+        // Close the current dashboard stage
+        stage.close();
+        // Create a new Login instance and show the login page
+        Login login = new Login(); // Assuming you have a class named Login for your login page
+        Stage loginStage = new Stage();
+        login.start(loginStage);
+    }
+   // private HBox selectedButton; // Add this variable to keep track of the selected button
+
+    //private HBox selectedButton; // Add this variable to keep track of the selected button
+    /*
+
+    private void setSelectedButton(HBox buttonContainer) {
+        // Deselect the previously selected button if any
+        if (selectedButton != null) {
+            Button previousButton = (Button) selectedButton.getChildren().get(1);
+            previousButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        }
+
+        // Select the new button with orange color
+        Button button = (Button) buttonContainer.getChildren().get(1); // Assuming the button is the second child
+        button.setStyle("-fx-background-color: orange; -fx-text-fill: white; -fx-border-color: transparent;");
+
+        // Update the selectedButton reference
+        selectedButton = buttonContainer;
+
+        // Add an action to reset the color when the same button is clicked again
+        button.setOnAction(event -> {
+            button.setStyle("-fx-background-color: orange; -fx-text-fill: white; -fx-border-color: transparent;");
+            //handleButtonClick(buttonText);
+        });
+    }
+*/
+
+    private Button createAddPatientButton(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+        Button addPatientButton = new Button("+" + "  New Patient");
+        addPatientButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+        double buttonWidth = 140;
+        double buttonHeight = 30;
+        addPatientButton.setMinSize(buttonWidth, buttonHeight);
+        AddNewPatient addNewPatient=new AddNewPatient();
+        addPatientButton.setOnAction(event -> addNewPatient.handleAddPatient(stage));
+        return addPatientButton;
+    }
+   
+
+    /***
+     *
+     * @param circle- Circle as passed as the argument
+     * @param label- label as argimeny
+     * @return- return the stackpane consisisting of circle
+     */
+
+    private StackPane createShortcutPane(Circle circle, Label label) {
+        StackPane shortcutPane = new StackPane();
+
+        // Add the circle to the StackPane
+        shortcutPane.getChildren().add(circle);
+
+        // Set the label as the center node of the StackPane
+        shortcutPane.setAlignment(Pos.CENTER);
+        shortcutPane.getChildren().add(label);
+
+        return shortcutPane;
+    }
+
+    /***
+     * Method for genearting the shortcut
+     * @param username -username is passed as the argument
+     * @return -returning a string consisting of shortcut
+     */
+    private String generateShortcut(String username) {
+        // Generate a dynamic shortcut based on the first letter of each word in the username
+        String[] words = username.split("\\s+");
+        StringBuilder shortcutBuilder = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                shortcutBuilder.append(word.charAt(0));
+            }
+        }
+
+        return shortcutBuilder.toString().toUpperCase(); // Convert to uppercase for consistency
+    }
+    ///method for createing the the header  for setting dialog
+    private HBox createHeaderHBoxForContextMenu() {
+        HBox headerHBox = new HBox(200);
+        Label addPatientLabel = new Label("Settings");
+        addPatientLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: black; -fx-font-size: 14;");
+
+        Image closeImage = new Image("file:/C:/Auto_Uplaoder/Exit.png"); // Replace with your image URL
+        ImageView imageView = new ImageView(closeImage);
+        imageView.setFitWidth(8); // Set your desired width
+        imageView.setFitHeight(8); // Set your desired height
+
+        // Handle close button click
+        imageView.setOnMouseClicked(event -> {
+            Stage stage = (Stage) headerHBox.getScene().getWindow();
+            stage.close();
+            handleContextMenuClosed();
+           // handleContextMenuClosed();
+
+        });
+
+        headerHBox.getChildren().addAll(addPatientLabel, imageView);
+        return headerHBox;
+    }
+    // In the method where you handle the context menu closing
+    private void handleContextMenuClosed() {
+       selectedValue = templatesCombobox.getValue();
+        UploadResult uploadResult = new UploadResult();
+        uploadResult.createUpload(selectedValue);
+        System.out.println(selectedValue);
+    }
+    public String getDefaultImageDirectory() {
+        return defaultImageDirectory;
+    }
+    public Integer getDefaultImageAmountInSettingDialog() {
+        return defaultImageAmountInSettingDialog;
+    }
+}

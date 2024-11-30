@@ -1,0 +1,224 @@
+package com.autouploader;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
+import java.time.LocalDate;
+
+public class DashBoardResult {
+
+    public void displayResult(Stage stageForDashBoardResult, BorderPane borderPane,String result, Pane fixedRec)
+    {
+        VBox resultContent = new VBox(30);
+        resultContent.setAlignment(Pos.TOP_LEFT);
+
+
+        // Greeting based on the time of the day and the username
+        String greeting = generateGreeting();
+        Label greetingLabel = new Label(greeting);
+        greetingLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // Today's date label
+        Label dateLabel = new Label("Jan 23, 2024");
+        dateLabel.setStyle("-fx-font-size: 9 px;");
+        HBox greetingHbox=new HBox(16);
+        greetingHbox.setPadding(new Insets(15,0,0,0));
+        greetingHbox.setAlignment(Pos.TOP_LEFT);
+        greetingHbox.getChildren().addAll(greetingLabel,dateLabel);
+        //Site Statistics section
+        VBox siteStatsBox = siteStatics();
+        // Create the Alerts section
+        VBox alertsSection = createAlertsSection();
+        VBox alertVbox=createAlert("Jan 24","patients review is done","uplaod_icon.png");
+
+        // Create an HBox to hold both the site stats and alerts
+        HBox siteStatsAndAlertsBox = new HBox(60);
+        siteStatsAndAlertsBox.getChildren().addAll(siteStatsBox, alertsSection);
+
+
+
+        TableView<Appointment> upcomingAppointmentsTable = createUpcomingAppointmentsTable();
+        // Add components to the resultContent VBox
+        resultContent.getChildren().addAll(greetingHbox, siteStatsAndAlertsBox,upcomingAppointmentsTable);
+        fixedRec.getChildren().clear();
+        fixedRec.getChildren().add(resultContent);
+        resultContent.setPadding(new Insets(0,0,0,20));
+
+
+        // Optional: Print the result to verify its content
+        System.out.println("Result Content: " + result);
+
+
+
+
+
+    }
+    public String generateGreeting()
+    {
+        return "Good Morning, Dev";
+    }
+
+    private VBox createAlertsSection() {
+        VBox alertsSection = new VBox(10);
+        alertsSection.setAlignment(Pos.CENTER_LEFT);
+
+        // Create VBox for each alert
+        VBox alert1 = createAlert("Sep 2", "Urgent case has been reviewed", "uplaod_icon.png");
+      //  VBox alert2 = createAlert("Sep 5", "Important notice regarding patient XYZ", "alert_image2.png");
+
+        // Add VBox for each alert to the HBox
+        alertsSection.getChildren().addAll(alert1);
+
+        return alertsSection;
+    }
+
+    private VBox siteStatics() {
+        // Create the Site Statistics header (heading and dropdown in the same row)
+        HBox siteStatsHeader = createSiteStatsHeader();
+
+        // Row for patient statistics
+        HBox patientStatsRow = createPatientStatsRow();
+
+        // Create a VBox to hold patient statistics
+        VBox statsVBox = new VBox(10);
+        statsVBox.getChildren().addAll(siteStatsHeader, patientStatsRow);
+
+        // Create a Rectangle to enclose the content
+        Rectangle statsRectangle2 = new Rectangle();
+        statsRectangle2.setFill(Color.WHITE);
+        statsRectangle2.setStroke(Color.BLACK); // Set the border color (optional)
+        statsRectangle2.setStrokeWidth(3.0); // Set the border width (optional)
+        statsRectangle2.setHeight(100);
+        statsRectangle2.setWidth(400);
+
+
+        // Add the Rectangle to the VBox
+       //statsVBox.getChildren().add(statsRectangle2);
+
+        statsVBox.setClip(statsRectangle2);
+
+        // Create a VBox to hold the statvbox
+        VBox siteStatsBox = new VBox(statsVBox);
+
+
+        return siteStatsBox;
+    }
+    private VBox createAlert(String date, String description, String imageName) {
+        VBox alertBox = new VBox(10);
+        HBox alertLabelHbox=new HBox(160);
+        HBox alertDetailsHbox=new HBox(10);
+        alertLabelHbox.setAlignment(Pos.CENTER); // Align children along the center
+Label alertLabel=new Label("Alerts");
+alertLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+Image imageForAlertHboxLabel=new Image("file:/C:/Auto_Uplaoder/down_rectangle.png");
+ImageView imaggeFoeAlertHboxImageView=new ImageView(imageForAlertHboxLabel);
+imaggeFoeAlertHboxImageView.setFitHeight(40);
+imaggeFoeAlertHboxImageView.setFitWidth(40);
+alertLabelHbox.getChildren().addAll(alertLabel,imaggeFoeAlertHboxImageView);
+        // Date label
+        Label dateLabel = new Label(date);
+        dateLabel.setStyle("-fx-font-weight: bold;");
+
+        // Description label
+        Label descriptionLabel = new Label(description);
+
+        // Image (replace "file:/C:/Auto_Uplaoder/" with your actual image path)
+        ImageView alertImage = new ImageView(new Image("file:/C:/Auto_Uplaoder/" + imageName));
+        alertImage.setFitWidth(35); // Set your desired width
+        alertImage.setFitHeight(35); // Set your desired height
+        alertDetailsHbox.setAlignment(Pos.CENTER);
+alertDetailsHbox.getChildren().addAll(dateLabel,descriptionLabel,alertImage);
+        // Add components to the VBox
+        alertBox.getChildren().addAll(alertLabelHbox,alertDetailsHbox);
+
+        return alertBox;
+    }
+    private HBox createPatientStatsRow() {
+        HBox patientStatsRow = new HBox(20);
+
+        // Create VBox for each statistic
+        VBox screenedBox = createStatisticBox("50","Patients Screened");
+        VBox referredBox = createStatisticBox("100","Patients Referred");
+        VBox encounterBox = createStatisticBox("105","Patients Encountered");
+
+        // Add VBox for each statistic to the HBox
+        patientStatsRow.getChildren().addAll(screenedBox, referredBox, encounterBox);
+
+        return patientStatsRow;
+    }
+    private VBox createStatisticBox( String value,String label) {
+        VBox statisticBox = new VBox(2);
+
+        // Create labels for the statistic
+        Label valueLabel = new Label(value);
+        Label labelLabel = new Label(label);
+
+
+        // Add labels to the VBox
+        statisticBox.getChildren().addAll(valueLabel,labelLabel);
+
+        // Align the VBox at the top
+        statisticBox.setAlignment(Pos.TOP_CENTER);
+
+        return statisticBox;
+    }
+    private HBox createSiteStatsHeader() {
+        HBox siteStatsHeader = new HBox(170);
+
+        // Heading for Site Statistics
+        Label headingLabel = new Label("Site Statistics");
+        headingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        // Dropdown for time period selection
+        ComboBox<String> timePeriodDropdown = new ComboBox<>();
+        timePeriodDropdown.getItems().addAll("This Month", "Last Week");
+        timePeriodDropdown.setValue("This Month");
+
+        // Add components to the HBox
+        siteStatsHeader.getChildren().addAll(headingLabel, timePeriodDropdown);
+
+        return siteStatsHeader;
+    }
+
+    private TableView<Appointment> createUpcomingAppointmentsTable() {
+        // Logic to create and populate the TableView with upcoming appointments data
+        // You can use the TableView API to define columns and add data dynamically
+        TableView<Appointment> appointmentsTable = new TableView<>();
+
+        // Add columns to the TableView (e.g., Name, Ordering Provider, Date Ordered)
+        TableColumn<Appointment, String> nameColumn = new TableColumn<>("Name");
+        TableColumn<Appointment, String> orderingProviderColumn = new TableColumn<>("Ordering Provider");
+        TableColumn<Appointment, LocalDate> dateOrderedColumn = new TableColumn<>("Date Ordered");
+        TableColumn<Appointment, Image>  imageUplaod=new TableColumn<>("Upload");
+
+
+        appointmentsTable.getColumns().addAll(nameColumn, orderingProviderColumn, dateOrderedColumn);
+
+        // Populate the TableView with data (replace this with your actual data)
+        ObservableList<Appointment> appointmentsData = FXCollections.observableArrayList(
+                new Appointment("John Doe", "Dr. Smith", LocalDate.of(2023, 1, 25)),
+                new Appointment("Jane Doe", "Dr. Johnson", LocalDate.of(2023, 2, 1))
+                // Add more data as needed
+        );
+        appointmentsTable.setItems(appointmentsData);
+
+        return appointmentsTable;
+    }
+
+
+
+
+}

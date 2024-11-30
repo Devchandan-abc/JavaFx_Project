@@ -1,0 +1,78 @@
+package com.autouploader;
+
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
+
+public class Upload {
+    private Pane fixedRectangleStackPane;
+
+    public Upload(Pane fixedRectangleStackPane) {
+        this.fixedRectangleStackPane = fixedRectangleStackPane;
+    }
+    public void displayUpload(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+        StackPane uploadStackPane = new StackPane();
+        // Create labels, image, search textbox, and list of patient names
+        Label queueLabel = new Label("Queue");
+        queueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px"); // Set bold and font size
+        ImageView imageViewRefresh = new ImageView(new Image("file:/C:/Auto_Uplaoder/Refresh.png")); // Replace with your image path
+        imageViewRefresh.setFitHeight(13);
+        imageViewRefresh.setFitWidth(13);
+        TextField searchTextField = new TextField();
+        searchTextField.setPromptText("search");
+       // searchTextField.requestFocus();
+        //Create an HBox for the image and labels
+        // Create a colored circle for the background of the "+"
+        Circle plusCircle = new Circle(15, Color.ORANGE);
+        Label addPatientPlusSymbol = new Label("+");
+        addPatientPlusSymbol.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"); // Customize label style
+
+        StackPane plusStackPane = new StackPane(plusCircle, addPatientPlusSymbol);
+        //plusStackPane.setAlignment(Pos.BOTTOM_RIGHT);
+        plusStackPane.setPadding(new Insets(200,0,0,100));
+        HBox hbox = new HBox(queueLabel, imageViewRefresh);
+        hbox.setSpacing(75);
+        VBox vboxforPateintLabel = new VBox(40);
+        Label patientLabel = new Label("Dev Kumar"); // Replace with actual patient name
+        Label patientLabel2 = new Label("Raja Kumar"); // Replace with actual patient name
+        Label patentLabel3 = new Label("Sunny Kumar");
+
+
+        vboxforPateintLabel.getChildren().addAll(patientLabel, patientLabel2, patentLabel3);
+        // Create a VBox for search textbox and patient names
+        VBox vboxForMainContent = new VBox(hbox, searchTextField, vboxforPateintLabel, plusStackPane);
+
+
+        vboxForMainContent.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+        vboxForMainContent.setPadding(new Insets(20));
+        vboxForMainContent.setPrefSize(200, 500);
+        vboxForMainContent.setSpacing(30);
+        //  VBox.setMargin(vboxForMainContent,new Insets(23));
+        uploadStackPane.setMouseTransparent(false);
+        // Bring the TextField to the front
+        StackPane.setAlignment(searchTextField, Pos.TOP_LEFT);
+        uploadStackPane.getChildren().add(vboxForMainContent);
+        // Set focus on the TextField
+       // searchTextField.requestFocus();
+        // Set focus on the TextField after the scene is shown
+      //  Platform.runLater(() -> searchTextField.requestFocus());
+        // Add an event handler to make the TextField editable on mouse click
+        searchTextField.setOnMouseClicked(event -> {
+            searchTextField.setEditable(true);
+            searchTextField.requestFocus();
+        });
+
+        fixedRectangleStackPane.getChildren().clear();
+        fixedRectangleStackPane.getChildren().add(uploadStackPane);
+        StackPane.setMargin(vboxForMainContent, new Insets(10));
+
+    }
+}

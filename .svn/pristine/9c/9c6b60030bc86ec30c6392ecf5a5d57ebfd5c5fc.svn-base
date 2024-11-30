@@ -1,0 +1,368 @@
+package com.autouploader;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
+import javafx.util.converter.LocalDateStringConverter;
+
+import javax.swing.text.DateFormatter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
+public class PatientsResult {
+	private StackPane dispalyPatientResultStackpane;
+	private VBox patientResultVBox;
+	private ObservableList<Patient> patientData;
+	private Rectangle searchThisWeekRectagle;
+	private Rectangle searchThisMonthRecatangle;
+	private Rectangle searchLastThreeMonthRectagle;
+	private Rectangle searchAllTimeMonthRectangle;
+
+	public void displayPatientResult(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+		dispalyPatientResultStackpane = new StackPane();
+		// dispalyPatientResultStackpane.setPickOnBounds(false);
+		// this vbox for all content
+		patientResultVBox = new VBox(20);
+		patientResultVBox.setPadding(new Insets(35));
+		patientResultVBox.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+		// VBox.setMargin(patientResultVBox,new Insets(10,0,0,15));
+		HBox labelAndImage = new HBox(16);
+		Label label = new Label("Patients List");
+		label.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+		Image scrollingImage = new Image("file:/C:/Auto_Uplaoder/Refresh.png");
+		ImageView scrollingImageView = new ImageView(scrollingImage);
+		// Create a Rectangle with orange background
+		// Set the size for the circle
+		double circleSize = 28.0;
+		// Create a Circle with orange background
+		Circle orangeBackground = new Circle(circleSize / 2, Color.ORANGE);
+		// Create a StackPane and add the Rectangle and ImageView
+		StackPane stackPane = new StackPane();
+		stackPane.getChildren().addAll(orangeBackground, scrollingImageView);
+
+		// Set action to the ImageView when clicked
+		scrollingImageView.setOnMouseClicked(e -> {
+			// Perform actions to refresh the page and load new data
+			refreshTable();
+		});
+
+		scrollingImageView.setFitWidth(16);
+		scrollingImageView.setFitHeight(16);
+// adding label and imageview in hbox
+		labelAndImage.getChildren().addAll(label, stackPane);
+		Button searchThisWeekButton = new Button("This Week");
+		searchThisWeekRectagle = new Rectangle();
+		searchThisWeekRectagle.setHeight(3);
+		searchThisWeekRectagle.setWidth(60);
+		VBox vboxContaingButtonAndRectagle = new VBox();
+		vboxContaingButtonAndRectagle.setAlignment(Pos.CENTER);
+		vboxContaingButtonAndRectagle.getChildren().addAll(searchThisWeekButton, searchThisWeekRectagle);
+		searchThisWeekRectagle.setFill(Color.WHITE);
+		searchThisWeekButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		searchThisWeekButton.setOnAction(e -> {
+			searchThisWeekRectagle.setFill(Color.ORANGE);
+			searchThisMonthRecatangle.setFill(Color.WHITE);
+			searchLastThreeMonthRectagle.setFill(Color.WHITE);
+			searchAllTimeMonthRectangle.setFill(Color.WHITE);
+
+			LocalDate today = LocalDate.now();
+			LocalDate startDate = today.minusDays(today.getDayOfWeek().getValue() - 1);// 4-1=3
+			// 3 days will be subtracted from taody date
+			LocalDate endDate = today.plusDays(7 - today.getDayOfWeek().getValue());// 7-4=3
+			// 3 days from now will be added considering monday as 1 sunday as 7
+
+			// Filter patient data based on the date range
+			ObservableList<Patient> filteredData = filterDataByDate(patientData, startDate, endDate);
+			updateTable(filteredData);
+
+
+		});
+
+		Button searchThisMonthButton = new Button("This Month");
+		VBox vboxContainingThisMonthButtonAndRectangle = new VBox();
+		searchThisMonthRecatangle = new Rectangle();
+		searchThisMonthRecatangle.setFill(Color.WHITE);
+		searchThisMonthRecatangle.setHeight(3);
+		searchThisMonthRecatangle.setWidth(60);
+		vboxContainingThisMonthButtonAndRectangle.setAlignment(Pos.CENTER);
+
+		vboxContainingThisMonthButtonAndRectangle.getChildren().addAll(searchThisMonthButton,
+				searchThisMonthRecatangle);
+
+		searchThisMonthButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		/// Action for This Month button
+		searchThisMonthButton.setOnAction(event -> {
+			searchThisMonthRecatangle.setFill(Color.ORANGE);
+			searchThisWeekRectagle.setFill(Color.TRANSPARENT);
+			searchLastThreeMonthRectagle.setFill(Color.WHITE);
+			searchAllTimeMonthRectangle.setFill(Color.WHITE);
+			LocalDate today = LocalDate.now();
+			// search based on 1st day of this month to end of this month
+			LocalDate startDate = today.withDayOfMonth(1);
+			LocalDate endDate = today.withDayOfMonth(today.lengthOfMonth());
+
+			// Filter patient data based on the date range
+			ObservableList<Patient> filteredData = filterDataByDate(patientData, startDate, endDate);
+			updateTable(filteredData);
+		});
+		Button searchLast3MonthButton = new Button("Last 3 Month");
+		VBox vboxContainingThisThreeMonthButtonAndRectangle = new VBox();
+		searchLastThreeMonthRectagle = new Rectangle();
+		searchLastThreeMonthRectagle.setFill(Color.WHITE);
+		searchLastThreeMonthRectagle.setHeight(3);
+		searchLastThreeMonthRectagle.setWidth(70);
+		vboxContainingThisThreeMonthButtonAndRectangle.setAlignment(Pos.CENTER);
+
+		vboxContainingThisThreeMonthButtonAndRectangle.getChildren().addAll(searchLast3MonthButton,
+				searchLastThreeMonthRectagle);
+
+		searchLast3MonthButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		// Action for Last 3 Months button
+
+		searchLast3MonthButton.setOnAction(event -> {
+			searchThisMonthRecatangle.setFill(Color.WHITE);
+			searchThisWeekRectagle.setFill(Color.TRANSPARENT);
+			searchLastThreeMonthRectagle.setFill(Color.ORANGE);
+			searchAllTimeMonthRectangle.setFill(Color.WHITE);
+			LocalDate endDate = LocalDate.now();
+			// take days of month 1 and subtract from current date 1
+			LocalDate startDate = endDate.minusMonths(2).withDayOfMonth(1);
+
+			// Filter patient data based on the date range
+			ObservableList<Patient> filteredData = filterDataByDate(patientData, startDate, endDate);
+			updateTable(filteredData);
+		});
+		Button searchAllTimeButton = new Button("All time");
+		VBox vboxContainingAllTimeButtonAndRectangle = new VBox();
+		searchAllTimeMonthRectangle = new Rectangle();
+		searchAllTimeMonthRectangle.setFill(Color.WHITE);
+		searchAllTimeMonthRectangle.setHeight(3);
+		searchAllTimeMonthRectangle.setWidth(44);
+		vboxContainingAllTimeButtonAndRectangle.setAlignment(Pos.CENTER);
+
+		vboxContainingAllTimeButtonAndRectangle.getChildren().addAll(searchAllTimeButton, searchAllTimeMonthRectangle);
+
+		searchAllTimeButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		searchAllTimeButton.setOnAction(e -> {
+			searchThisMonthRecatangle.setFill(Color.WHITE);
+			searchThisWeekRectagle.setFill(Color.TRANSPARENT);
+			searchLastThreeMonthRectagle.setFill(Color.WHITE);
+			searchAllTimeMonthRectangle.setFill(Color.ORANGE);
+			// Show all patient data
+			updateTable(patientData);
+		});
+		HBox hboxFortextboxContaingImageInside = new HBox();
+		hboxFortextboxContaingImageInside.setSpacing(5);
+		Image searchImageTextBox = new Image("file:/C:/Auto_Uplaoder/search.png");
+		ImageView searchImageView = new ImageView(searchImageTextBox);
+
+		searchImageView.setFitWidth(10);
+		searchImageView.setFitHeight(10);
+		TextField searchTextField = new TextField();
+		HBox hboxContainingImage = new HBox();
+		hboxContainingImage.getChildren().add(searchImageView);
+		hboxContainingImage.setPadding(new Insets(7));
+		HBox hboxContaingTextField = new HBox();
+		hboxContaingTextField.getChildren().add(searchTextField);
+
+		searchTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 0 0; ");
+		hboxFortextboxContaingImageInside.getChildren().addAll(hboxContaingTextField, hboxContainingImage);
+		hboxFortextboxContaingImageInside.setAlignment(Pos.CENTER);
+		hboxFortextboxContaingImageInside.setStyle("-fx-border-radius: 5;" + "-fx-border-color: black;");
+
+		searchTextField.setPromptText("search");
+		// searchTextField.setDisable(false);
+		searchTextField.setPrefSize(150, 20);
+		/// setting action for searchImage View
+		searchImageView.setOnMouseClicked(e -> {
+			String searchedText = searchTextField.getText().trim();// trim method remove the leading and trailing white
+																	// spaces
+			if (!searchedText.isEmpty())
+			// return true if the length is 0 other wise false
+			{
+				ObservableList<Patient> filteredData = filterDataBySearchText(patientData, searchedText);
+				// Update the table with filtered data
+				updateTable(filteredData);
+			} else {
+				updateTable(patientData);
+			}
+		});
+
+		HBox patintsHeaderHbox = new HBox(30);
+//patintsHeader.setPadding(new Insets(15,0,0,20));
+		// addind differnt component to hbox button and heeder
+		patintsHeaderHbox.getChildren().addAll(labelAndImage, vboxContaingButtonAndRectagle,
+				vboxContainingThisMonthButtonAndRectangle, vboxContainingThisThreeMonthButtonAndRectangle,
+				vboxContainingAllTimeButtonAndRectangle, hboxFortextboxContaingImageInside);
+		TableView<Patient> patientTableTableView = createPatientResult();
+
+		patientResultVBox.getChildren().addAll(patintsHeaderHbox, patientTableTableView);
+		dispalyPatientResultStackpane.getChildren().add(patientResultVBox);
+		StackPane.setMargin(patientResultVBox, new Insets(10, 0, 0, 15));
+
+		fixedRectangleStackPane.getChildren().clear();
+		fixedRectangleStackPane.getChildren().add(dispalyPatientResultStackpane);
+	       searchThisMonthButton.fire();
+		
+	}
+
+
+	
+
+	public TableView<Patient> createPatientResult() {
+		// Create a DateTimeFormatter for formatting the LocalDate
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM-dd-yy");
+
+		TableView<Patient> patientTableview = new TableView<>();
+
+		// Make the table background transparent
+		patientTableview.setStyle("-fx-background-color: transparent;");
+		TableColumn<Patient, String> namePatientColumn = new TableColumn<>("Name  ");
+		TableColumn<Patient, Integer> caseIdColumn = new TableColumn<>("Case Id   ");
+		namePatientColumn.setStyle("-fx-background-color: transparent;");
+		caseIdColumn.setStyle("-fx-background-color: transparent;");
+
+		TableColumn<Patient, Integer> mrnColumn = new TableColumn<>("MRN  ");
+		TableColumn<Patient, String> uploadStatusColumn = new TableColumn<>("Upload Status  ");
+		
+		TableColumn<Patient, String> caseStatusColumn = new TableColumn<>("Case  Status  ");
+		TableColumn<Patient, LocalDate> dateTableColum = new TableColumn<>("Date Created  ");
+		TableColumn<Patient, String> uploadedBy = new TableColumn<>("Uploaded By  ");
+		TableColumn<Patient, ImageView> imageContaingEditableImage = new TableColumn<>("a");
+		imageContaingEditableImage.setText(""); // Set the column header text to an empty string
+		// imageContaingEditableImage.setGraphic(null); // Set the column header graphic
+		// to null
+		// Set the background color of the table columns to white
+//        namePatientColumn.setStyle("-fx-background-color: white;");
+//        caseIdColumn.setStyle("-fx-background-color: white;");
+//        mrnColumn.setStyle("-fx-background-color: white;");
+//        uploadStatusColumn.setStyle("-fx-background-color: white;");
+//        caseStatusColumn.setStyle("-fx-background-color: white;");
+//        dateTableColum.setStyle("-fx-background-color: white;");
+//        uploadedBy.setStyle("-fx-background-color: white;");
+//        imageContaingEditableImage.setStyle("-fx-background-color: white;");
+
+		// Set cell value factories
+		namePatientColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+		caseIdColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getCaseId()));
+		mrnColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getMrn()));
+		uploadStatusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUploadStatus()));
+		caseStatusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCaseStatus()));
+		dateTableColum.setCellValueFactory(data -> new SimpleObjectProperty<>((data.getValue().getDateCreated())));
+		uploadedBy.setCellValueFactory(data -> new SimpleStringProperty((data.getValue().getUploadedBy())));
+
+		// (dateFormatter.format(data.getValue().getDateCreated()))
+		imageContaingEditableImage
+				.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getImageView()));
+
+		// Add the columns to the TableView
+		patientTableview.getColumns().addAll(namePatientColumn, caseIdColumn, mrnColumn, uploadStatusColumn,
+				caseStatusColumn, dateTableColum, uploadedBy, imageContaingEditableImage);
+
+		Image image1 = new Image("file:/C:/Auto_Uplaoder/Help.png");
+		ImageView imageView1 = new ImageView(image1);
+		imageView1.setFitHeight(15);
+		imageView1.setFitWidth(15);
+
+		Image image2 = new Image("file:/C:/Auto_Uplaoder/Help.png");
+		ImageView imageView2 = new ImageView(image2);
+		imageView2.setFitHeight(15);
+		imageView2.setFitWidth(15);
+		patientData = FXCollections.observableArrayList(
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Dev", 13233, 233, "uploaded", "reviewed", LocalDate.now(), "Raju", imageView2),
+				new Patient("Louis", 234, 123, "not uplaoded", "not reviewd", LocalDate.parse("2023-02-12"), "Dev",
+						imageView2),
+				new Patient("jorge", 988, 7363, "uploaded", "not reviewd", LocalDate.parse("2024-01-13"), "jorge",
+						imageView2),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-21"), "Raju",
+						imageView1),
+				new Patient("Dr jorge", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-07-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2023-03-04"), "Nikhil",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1),
+				new Patient("Raju", 1323, 23553, "not uploaded", "reviewed", LocalDate.parse("2024-03-04"), "Raju",
+						imageView1));
+
+		// Set the column resize policy to constrained
+		patientTableview.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+		patientTableview.setItems(patientData);
+
+		return patientTableview;
+	}
+
+	/// fileering the data based on the start and end date
+	private ObservableList<Patient> filterDataByDate(ObservableList<Patient> patientData, LocalDate startDate,
+			LocalDate endDate) {
+		return patientData.filtered(patient -> {
+			LocalDate patientDate = patient.getDateCreated();
+			return !patientDate.isBefore(startDate) && !patientDate.isAfter(endDate);
+		});
+	}
+
+	// updating the table with the existing data
+	private void updateTable(ObservableList<Patient> filteredData) {
+		TableView<Patient> patientTable = createPatientResult();
+		if (filteredData.isEmpty()) {
+			// Display a message or handle the empty data case
+			System.out.println("no data is present");
+		} else {
+			patientTable.setItems(filteredData);
+			patientResultVBox.getChildren().set(1, patientTable);
+		}
+	}
+
+	/**
+	 * Method for refreshing the dispalyresultstackpane for refresing the table view
+	 */
+	private void refreshTable() {
+		// Placeholder method for refreshing the page
+		System.out.println("Table got reloaded");
+
+		// Update the displayPatientResultStackpane with the modified patientResultVBox
+		dispalyPatientResultStackpane.getChildren().clear();
+		TableView<Patient> patientTable = createPatientResult();
+		// Replace the existing TableView with the new one,replcing the patientTablenode
+		// view with the existing one
+		patientResultVBox.getChildren().set(1, patientTable);
+		dispalyPatientResultStackpane.getChildren().add(patientResultVBox);
+	}
+	// filtered the data based on search ing the name and return a new filtered list
+
+	private ObservableList<Patient> filterDataBySearchText(ObservableList<Patient> patientData, String searchText) {
+		return patientData.filtered(patient -> patient.getName().toLowerCase().contains(searchText.toLowerCase()));
+	}
+
+}

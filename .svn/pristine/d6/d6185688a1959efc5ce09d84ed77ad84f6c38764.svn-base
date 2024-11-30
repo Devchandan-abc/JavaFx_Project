@@ -1,0 +1,203 @@
+package com.autouploader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+public class Dashboard {
+public Stage stage;
+public Pane fixedPane;
+public BorderPane borderPane;
+    public void OpenDashBoard(Stage primaryStage, String username) {
+        this.stage=primaryStage;
+        StackPane dashboardStackPane = new StackPane();
+
+        // Create a BorderPane for the main content
+        BorderPane dashboardRoot = new BorderPane();
+        this.borderPane=dashboardRoot;
+
+        // Create a VBox for the top of the dashboard
+        VBox topVBox = new VBox(10);
+       // topVBox.setAlignment(Pos.TOP_LEFT);
+
+        // Create an HBox for the username and shortcut
+        HBox usernameBox = new HBox(10);
+        usernameBox.setAlignment(Pos.TOP_RIGHT);
+
+        // Create a label for the username
+        Label usernameLabel = new Label(username);
+
+        // Create a circular box for the shortcut
+        Circle shortcutCircle = new Circle(10); // Set the desired radius
+        shortcutCircle.setFill(Color.GREY); // Set the desired color
+
+        // Create a label for the dynamic shortcut text
+        Label shortcutLabel = new Label(generateShortcut(username));
+        shortcutLabel.setTextFill(Color.WHITE); // Set the desired text color
+
+        // Add the components to the usernameBox
+        usernameBox.getChildren().addAll(createShortcutPane(shortcutCircle, shortcutLabel), usernameLabel);
+
+        // Set HBox to take up full width
+
+
+        // Add the usernameBox to the VBox
+        topVBox.getChildren().add(usernameBox);
+
+        // Set the top of the BorderPane to the VBox
+        dashboardRoot.setTop(topVBox);
+
+        // Create an ImageView for the Eyepacs logo
+        ImageView eyepacsLogo = new ImageView(new Image("file:/C:/Auto_Uplaoder/eyepacslogo.png.png"));
+        //dashboardRoot.setLeft(eyepacsLogo);
+        eyepacsLogo.setFitHeight(50);
+        eyepacsLogo.setFitWidth(150);
+
+        // Create a button for Add Patient
+        // Create a VBox to hold the Eyepacs logo and "Add Patient" button
+        VBox logoAndButtonVBox = new VBox(40);
+        logoAndButtonVBox.setAlignment(Pos.TOP_LEFT);
+        // Create a StackPane for the fixed rectangle
+       /* StackPane fixedRectangleStackPane = new StackPane();
+        this.fixedRec=fixedRectangleStackPane;
+
+        // Create a Rectangle for the fixed area
+        Rectangle fixedRectangle = new Rectangle(1100, 610); // Set your desired width and height
+        fixedRectangle.setFill(Color.WHITE); // Set your desired color
+
+        // Add the fixedRectangle to the StackPane
+        fixedRectangleStackPane.getChildren().add(fixedRectangle);
+        StackPane.setMargin(fixedRectangle, new Insets(40, 0, 0, 180));
+
+        // Set the StackPane containing the fixed rectangle to the top of the Dashboard StackPane
+        //positionaling on top from in vertical and right in horizontal
+        StackPane.setAlignment(fixedRectangleStackPane, Pos.TOP_RIGHT);
+        fixedRectangleStackPane.setVisible(true);
+        dashboardStackPane.getChildren().add(fixedRectangleStackPane);*/
+        Pane fixedPane=new Pane();
+        this.fixedPane=fixedPane;
+        fixedPane.setPrefSize(1100,610);
+
+        // Set the position of the Pane to create a margin from the left and top
+        fixedPane.setTranslateX(220); // Left margin
+        fixedPane.setTranslateY(50); // Top margin
+
+        fixedPane.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        // Create a clip for the Pane
+        Rectangle clip = new Rectangle(fixedPane.getPrefWidth(), fixedPane.getPrefHeight());
+        fixedPane.setClip(clip);
+
+        // Add the fixedPane to the StackPane
+        dashboardStackPane.getChildren().add(fixedPane);
+
+        // Set the StackPane containing the fixed rectangle to the top of the Dashboard StackPane
+        StackPane.setAlignment(fixedPane, Pos.TOP_RIGHT);
+        fixedPane.setVisible(true);
+
+        // Add the BorderPane to the Dashboard StackPane
+       // dashboardStackPane.getChildren().addAll(dashboardRoot);
+
+
+
+        // Add the BorderPane to the Dashboard StackPane
+        dashboardStackPane.getChildren().addAll(dashboardRoot);
+
+        HBox dashboardButton = createNavigationButton("dashboard_icon.png","Dashboard" , "Dashboard result",fixedPane);
+        HBox uploadButton = createNavigationButton("upload_icon.png","Upload", "Upload result",fixedPane);
+        HBox helpButton = createNavigationButton("help_icon.png","Help" , "Help result",fixedPane);
+        HBox patientsButton = createNavigationButton("patients_icon.png","Patients", "Patients result",fixedPane);
+        // Set margin for each child within logoAndButtonVBox
+        StackPane.setMargin(eyepacsLogo, new Insets(0, 0, 0, 75));
+        StackPane.setMargin(createAddPatientButton(primaryStage), new Insets(0, 0, 0, 75));
+        StackPane.setMargin(uploadButton, new Insets(0, 0, 0, 75));
+        StackPane.setMargin(dashboardButton, new Insets(0, 0, 0, 75));
+        StackPane.setMargin(patientsButton, new Insets(0, 0, 0, 75));
+        StackPane.setMargin(helpButton, new Insets(0, 0, 0, 75));
+        logoAndButtonVBox.getChildren().addAll(eyepacsLogo, createAddPatientButton(primaryStage),uploadButton,dashboardButton,patientsButton,helpButton);
+        dashboardRoot.setLeft(logoAndButtonVBox);
+        // Get the screen bounds
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        // Calculate the width and height as 90% of the screen size
+        double width = screenBounds.getWidth() * 0.99;
+        double height = screenBounds.getHeight() * 0.99;
+        // Create a layout for the Dashboard scene
+        Scene dashboardScene = new Scene(dashboardStackPane, width, height);
+        primaryStage.setScene(dashboardScene);
+       // primaryStage.setFullScreen(true);
+
+    }
+
+    private void handleAddPatient(Stage primaryStage) {
+        // Implement the logic for handling the "Add Patient" button click
+        // For example, open a new window or navigate to a new page for adding a patient
+    }
+    // Method to create navigation buttons for sections like Upload, Dashboard, Patients, and Help
+    private HBox createNavigationButton (String imageName,String buttonText , String result,Pane  fixedRectangleStackPane ) {
+        DashBoardResult dashBoardResult=new DashBoardResult();
+        Button sectionButton = new Button(buttonText);
+        sectionButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        // Add styles or customization as needed
+       // sectionButton.setOnAction(event -> handleSectionNavigation(sectionName, primaryStage));
+        ImageView image = new ImageView(new Image("file:/C:/Auto_Uplaoder/" + imageName));
+        image.setFitWidth(20); // Set your desired width
+        image.setFitHeight(20); // Set your desired height
+
+        sectionButton.setGraphic(new Group(image, new Text(" "))); // Add space for separation
+        // Add additional styles or customization as needed
+        if(buttonText.equals("Dashboard"))
+        {
+            sectionButton.setOnAction(event -> dashBoardResult.displayResult(stage,borderPane,result,fixedRectangleStackPane));
+        }
+       //sectionButton.setOnAction(event -> dashBoardResult.displayResult(stage,borderPane,result,fixedRec));
+        HBox hbox = new HBox(); // Adjust spacing as needed
+        hbox.setAlignment(Pos.CENTER);
+        hbox.getChildren().addAll( image,sectionButton);
+
+        return hbox;
+    }
+
+    private Button createAddPatientButton(Stage primaryStage) {
+        Button addPatientButton = new Button("+ New Patient");
+        addPatientButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+        addPatientButton.setOnAction(event -> handleAddPatient(primaryStage));
+        return addPatientButton;
+    }
+
+    private StackPane createShortcutPane(Circle circle, Label label) {
+        StackPane shortcutPane = new StackPane();
+
+        // Add the circle to the StackPane
+        shortcutPane.getChildren().add(circle);
+
+        // Set the label as the center node of the StackPane
+        shortcutPane.setAlignment(Pos.CENTER);
+        shortcutPane.getChildren().add(label);
+
+        return shortcutPane;
+    }
+
+    private String generateShortcut(String username) {
+        // Generate a dynamic shortcut based on the first letter of each word in the username
+        String[] words = username.split("\\s+");
+        StringBuilder shortcutBuilder = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                shortcutBuilder.append(word.charAt(0));
+            }
+        }
+
+        return shortcutBuilder.toString().toUpperCase(); // Convert to uppercase for consistency
+    }
+}

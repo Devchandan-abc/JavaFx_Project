@@ -1,0 +1,707 @@
+package com.autouploader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+public class AddNewPatient {
+	private Dialog<Void> addPatientDialog;
+    //public void handleAddPatient(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+//   public void handleAddPatient()
+//    {
+//        Dialog<Void> addPatientDialog = new Dialog<>();
+//        addPatientDialog.initStyle(StageStyle.UNDECORATED); // Remove the default close button and dialog ico
+//        DialogPane dialogPane = new DialogPane();
+//        dialogPane.setPrefSize(480, 490); // Set preferred dimensions
+//        dialogPane.setStyle("-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: Black; -fx-border-width:.5;");
+//        dialogPane.setContent(createPatientForm());
+//
+//        // Calculate the center of the screen
+//        Screen screen = Screen.getPrimary();
+//        double centerX = screen.getBounds().getWidth() / 2;
+//        double centerY = screen.getBounds().getHeight() / 2;
+//
+//        // Set the dialog position to be centered on the screen
+//        addPatientDialog.setX(centerX - (dialogPane.getPrefWidth() / 2));
+//        addPatientDialog.setY(centerY - (dialogPane.getPrefHeight() /2)-30);
+//        addPatientDialog.setDialogPane(dialogPane);
+//        addPatientDialog.showAndWait();
+//      
+//    }
+	public void handleAddPatient(Stage primaryStage) {
+	    // Create the dialog
+	    Dialog<Void> addPatientDialog = new Dialog<>();
+	    addPatientDialog.initStyle(StageStyle.UNDECORATED); // Remove the default close button and dialog icon
+	    DialogPane dialogPane = new DialogPane();
+	    dialogPane.setPrefSize(480, 490); // Set preferred dimensions
+	    dialogPane.setStyle("-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: Black; -fx-border-width:.5;");
+	    dialogPane.setContent(createPatientForm());
+
+	    // Calculate the center of the screen
+	    Screen screen = Screen.getPrimary();
+	    double centerX = screen.getBounds().getWidth() / 2;
+	    double centerY = screen.getBounds().getHeight() / 2;
+
+	    // Set the dialog position to be centered on the screen
+	    addPatientDialog.setX(centerX - (dialogPane.getPrefWidth() / 2));
+	    addPatientDialog.setY(centerY - (dialogPane.getPrefHeight() / 2) - 30);
+	    addPatientDialog.setDialogPane(dialogPane);
+
+	    // Darken the background
+	    darkenBackground(addPatientDialog, primaryStage);
+
+	    // Show the dialog and wait for it to close
+	    addPatientDialog.showAndWait();
+
+	    // Restore the background
+	    restoreBackground(addPatientDialog, primaryStage);
+	}
+	
+/*	public void handleAddPatient() {
+	    // Create the dialog
+	    addPatientDialog = new Dialog<>();
+	    addPatientDialog.initStyle(StageStyle.UNDECORATED); // Remove the default close button and dialog icon
+	    DialogPane dialogPane = new DialogPane();
+	    dialogPane.setPrefSize(480, 490); // Set preferred dimensions
+	    dialogPane.setStyle("-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: Black; -fx-border-width:.5;");
+	    dialogPane.setContent(createPatientForm());
+
+	    // Calculate the center of the screen
+	    Screen screen = Screen.getPrimary();
+	    double centerX = screen.getBounds().getWidth() / 2;
+	    double centerY = screen.getBounds().getHeight() / 2;
+
+	    // Set the dialog position to be centered on the screen
+	    addPatientDialog.setX(centerX - (dialogPane.getPrefWidth() / 2));
+	    addPatientDialog.setY(centerY - (dialogPane.getPrefHeight() / 2) - 30);
+	    addPatientDialog.setDialogPane(dialogPane);
+
+	    // Darken the background
+	    darkenBackground();
+
+	    // Show the dialog and wait for it to close
+	    addPatientDialog.showAndWait();
+
+	    // Restore the background
+	    restoreBackground();
+	}*/
+
+
+    private VBox createPatientForm() {
+     VBox vboxForAddPatient=new VBox(10);
+      //  vboxForAddPatient.setStyle("-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: black; -fx-border-width: 1;");
+        HBox labelAndCrossHbox=createHeaderHBox();
+
+        // Create a GridPane for the form
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(5);
+        gridPane.setVgap(2.8);
+        Label headingLabel=new Label("Create a new patient case");
+        Label nameLabel = new Label("NAME"); // Label without asterisk
+
+// Add an asterisk in red color
+        Label asteriskLabel = new Label("*");
+        asteriskLabel.setStyle("-fx-text-fill: red;");
+
+        HBox nameHBox = new HBox(1);
+        nameHBox.getChildren().addAll(nameLabel, asteriskLabel);
+
+        TextField nameTextField = new TextField();
+        nameTextField.setPromptText("type here");
+        HBox hboxForNameAndTextBox=new HBox(5);
+        hboxForNameAndTextBox.getChildren().addAll(nameHBox,nameTextField);
+        nameTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+        gridPane.add(hboxForNameAndTextBox, 0, 0); // Use the HBox containing nameLabel and asteriskLabel
+        Label genderLabel = new Label("GENDER");
+        Label asteriskLabel1 = new Label("*");
+        asteriskLabel1.setStyle("-fx-text-fill: red;");
+
+        HBox hboxforGenderLabelAndAstricksymbol = new HBox(1);
+
+        ComboBox<String> genderComboBox = new ComboBox<>();
+        genderComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+        genderComboBox.setPromptText("select one");
+        genderComboBox.getItems().addAll("Male", "Female");
+        genderComboBox.setDisable(false);
+        genderComboBox.setPrefWidth(150); // Adjust the width as needed
+
+        genderComboBox.requestFocus();
+        HBox hboxForGenderAndComboBox=new HBox(5);
+        hboxForGenderAndComboBox.getChildren().addAll(hboxforGenderLabelAndAstricksymbol,genderComboBox);
+        genderComboBox.setOnAction(event -> {
+            System.out.println("Selected: " + genderComboBox.getValue());
+        });
+
+        hboxforGenderLabelAndAstricksymbol.getChildren().addAll(genderLabel, asteriskLabel1);
+        HBox hboxFormrnLabelandAstrick=new HBox(5);
+        Label asteriskLabel2 = new Label("*");
+        asteriskLabel2.setStyle("-fx-text-fill: red;");
+        Label mrnLabel=new Label("MRN");
+        hboxFormrnLabelandAstrick.getChildren().addAll(mrnLabel,asteriskLabel2);
+        TextField mrnTextField=new TextField();
+        mrnTextField.setPromptText("type here");
+        mrnTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+        HBox hboxForMrnLabelAndTextBox=new HBox(5);
+        hboxForMrnLabelAndTextBox.getChildren().addAll(hboxFormrnLabelandAstrick,mrnTextField);
+        gridPane.add(hboxForMrnLabelAndTextBox,0,1);
+        HBox hboxForEthinicityandComboBox=new HBox(5);
+        Label ethinicityLabel=new Label("ETHINCITY");
+        ComboBox<String> ethinictyComboBox=new ComboBox<>();
+        ethinictyComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+        ethinictyComboBox.setPromptText("select one");
+        ethinictyComboBox.setPrefWidth(150);
+        ethinictyComboBox.getItems().addAll("racial","fair");
+        hboxForEthinicityandComboBox.getChildren().addAll(ethinicityLabel,ethinictyComboBox);
+        gridPane.add(hboxForEthinicityandComboBox,1,1);
+        gridPane.add(hboxForGenderAndComboBox,1,0);
+
+        HBox hboxForDobLabelandDatePicker = new HBox(10);
+        Label dobLabel=new Label("DOB:");
+        // Add DOB Label and DatePicker
+        TextField dobTextField=new TextField();
+        dobTextField.setPromptText("mm-dd-yyyy");
+
+        dobTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+        hboxForDobLabelandDatePicker.getChildren().addAll(dobLabel,dobTextField);
+
+//        gridPane.add(dobDatePicker,1,2);
+        gridPane.add(hboxForDobLabelandDatePicker,0,2);
+
+        StackPane pupilDilationStackPane = new StackPane();
+        pupilDilationStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Create a Text node for the "*" symbol
+        Text redAsterisk = new Text("*");
+      //  redAsterisk.setStyle(Color.RED);
+       redAsterisk.setFill(Color.RED);
+
+        // Combine the Text node and the rest of the label text
+        String pupilDilationStringLabel="Pupil Dilation";
+        Label pupilDilationLabel = new Label(pupilDilationStringLabel + " ");
+        //text will be set as the graphic to the label
+        pupilDilationLabel.setGraphic(redAsterisk);
+        // the astrick trext will be put right to the label
+        pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+        pupilDilationLabel.setPadding(new Insets(0,0,0,7));
+        ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+
+// Add items to the ComboBox
+        pupilDilationComboBox.getItems().addAll("A", "B");
+        pupilDilationComboBox.setPromptText("select");
+        pupilDilationComboBox.setPrefSize(240, 50);
+        pupilDilationComboBox.setStyle("-fx-background-color: transparent, white; -fx-border-width: 0 0 1 0, 1; -fx-border-color: black, black; -fx-border-radius: 5; -fx-text-fill: black;");
+HBox hboxForPupilDialationLabelandAtrick=new HBox(3);
+        pupilDilationStackPane.getChildren().addAll(pupilDilationComboBox,pupilDilationLabel);
+        pupilDilationStackPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.add(pupilDilationStackPane, 0, 3);
+
+// last eye exam
+        StackPane lastEyeExamStackPane = new StackPane();
+
+        // Create a Text node for the "*" symbol
+        Text redAsterisklastEyeExam = new Text("*");
+        //  redAsterisk.setStyle(Color.RED);
+        redAsterisklastEyeExam.setFill(Color.RED);
+
+        // Combine the Text node and the rest of the label text
+        String lastEye="Last Eye Exam";
+        Label lastEyeLabel = new Label(lastEye+ " ");
+        //text will be set as the graphic to the label
+        lastEyeLabel.setGraphic(redAsterisklastEyeExam);
+        lastEyeLabel.setPadding(new Insets(0,0,0,7));
+        lastEyeLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+
+        // Label lastEyeExamLabel = new Label("Last Eye Exam ");
+
+        ComboBox<String> lastEyeExamComboBox = new ComboBox<>();
+        lastEyeExamComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        lastEyeExamComboBox.getItems().addAll("A", "B");
+        lastEyeExamComboBox.setPromptText("Select");
+        lastEyeExamComboBox.setPrefSize(220, 40);
+        lastEyeExamComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+        // HBox hboxForPupilDialationLabelandAtrick5=new HBox(3);
+        //hboxForPupilDialationLabelandAtrick5.setPadding(new Insets(0,0,0,7));
+        // Label asteriskLabel4 = new Label("*");
+        //   asteriskLabel4.setStyle("-fx-text-fill: red;");
+        //hboxForPupilDialationLabelandAtrick5.getChildren().addAll(lastEyeExamLabel,asteriskLabel4);
+        //  lastEyeExamComboBox.requestFocus();
+// Create a Label to display the selected item
+        // Label selectedTextForLastEye = new Label("select");
+// Add a listener to update the label when an item is selected
+//        pupilDilationComboBox.setOnAction(event -> {
+//            String selectedText = pupilDilationComboBox.getValue();
+//            selectedTextForLastEye.setText(selectedText);
+//        });
+
+        lastEyeExamStackPane.getChildren().addAll(lastEyeExamComboBox, lastEyeLabel);
+        lastEyeExamStackPane.setAlignment(Pos.TOP_LEFT);
+
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(lastEyeExamStackPane, 0, 4);
+        // Create a StackPane to overlay the TextField and Label
+      StackPane haemoglobinStackPane = new StackPane();
+
+// Create a Label for "Haemoglobin"
+      Label haemoglobinLabel = new Label("Haemoglobin");
+      haemoglobinLabel.setPadding(new Insets(0,0,0,7));
+
+     // Create a TextField with a placeholder text
+        TextField haemoglobinTextField = new TextField();
+        haemoglobinTextField.setPromptText("type here");
+        haemoglobinTextField.setPrefSize(165, 50);
+// Set the alignment for the StackPane
+        haemoglobinStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        haemoglobinStackPane.getChildren().addAll(haemoglobinTextField, haemoglobinLabel);
+
+// Add the StackPane to the GridPane
+        gridPane.add(haemoglobinStackPane, 1, 3);
+        haemoglobinTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+
+
+        ///// for USUAL BLOOD SUGAR LEVEL
+        // Create a StackPane to overlay the TextField and Label
+        StackPane usualBloodSugarLevelStackPane= new StackPane();
+
+// Create a Label for "Haemoglobin"
+        Label usualBloodSugarLevelLAbel = new Label("USUAL BLOOD SUGAR LEVEL");
+        usualBloodSugarLevelLAbel.setPadding(new Insets(0,0,0,7));
+
+// Create a TextField with a placeholder text
+        TextField usualBloodSugarLevelTextField = new TextField();
+        usualBloodSugarLevelTextField.setPromptText("Type here");
+        //  usualBloodSugarLevelTextField.setPrefWidth(45);
+        usualBloodSugarLevelTextField.setPrefSize(165, 45);
+
+
+// Set the alignment for the StackPane
+        usualBloodSugarLevelStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        usualBloodSugarLevelStackPane.getChildren().addAll(usualBloodSugarLevelTextField, usualBloodSugarLevelLAbel);
+
+// Add the StackPane to the GridPane
+        //  GridPane.setColumnSpan(haemoglobinStackPane, 2);
+        gridPane.add(usualBloodSugarLevelStackPane, 1, 4);
+        usualBloodSugarLevelTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+//// YEARS WITH DIABATES
+
+        StackPane yearWithDiabatesStackPane = new StackPane();
+        Label yearWithDiabatesLabel = new Label("YEAR WITH DIABATES");
+
+        ComboBox<String> yearWithDiabatesComboBox = new ComboBox<>();
+        yearWithDiabatesComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        yearWithDiabatesComboBox.getItems().addAll("A", "B");
+        yearWithDiabatesComboBox.setPromptText("select");
+        yearWithDiabatesComboBox.setPrefSize(240, 45);
+        yearWithDiabatesComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+        // HBox hboxForYearWithDIABTESAndAstrick6=new HBox(2);
+        //hboxForYearWithDIABTESAndAstrick6.setPadding(new Insets(0,0,0,7));
+        //Label asteriskLabelForYearOfDaiabates = new Label("*");
+
+        // asteriskLabelForYearOfDaiabates.setStyle("-fx-text-fill: red;");
+        //     hboxForYearWithDIABTESAndAstrick6.getChildren().addAll(yearWithDiabatesLabel,asteriskLabelForYearOfDaiabates);
+        //    yearWithDiabatesComboBox.requestFocus();
+// Create a Label to display the selected item
+        //Label selectedTextLabelForYearOfDiabates = new Label();
+// Add a listener to update the label when an item is selected
+//        yearWithDiabatesComboBox.setOnAction(event -> {
+//            String selectedText = yearWithDiabatesComboBox.getValue();
+//            selectedTextLabelForYearOfDiabates.setText(selectedText);
+//        });
+        String yearwithdiabltes = "Year With Diabates";
+        Text yearwithdiabatesastrick = new Text("*");
+        yearwithdiabatesastrick.setFill(Color.RED);
+        Label yearWithDibatesLabel = new Label(yearwithdiabltes + " ");
+        yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+        yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+        yearWithDibatesLabel.setGraphic(yearwithdiabatesastrick);
+
+
+        yearWithDiabatesStackPane.getChildren().addAll(yearWithDiabatesComboBox, yearWithDibatesLabel);
+        yearWithDiabatesStackPane.setAlignment(Pos.TOP_LEFT);
+
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(yearWithDiabatesStackPane, 0, 5);
+
+
+///// CHOLESTORAL
+
+        // Create a StackPane to overlay the TextField and Label
+        StackPane chloaestralStackPane= new StackPane();
+
+// Create a Label for "Haemoglobin"
+        Label cholestaorolLabel = new Label("CHOLOLESTROL");
+        cholestaorolLabel.setPadding(new Insets(0,0,0,7));
+
+// Create a TextField with a placeholder text
+        TextField cholestorolTextField = new TextField();
+        cholestorolTextField.setPromptText("Type here");
+        //  cholestorolTextField.setPrefWidth(45);
+        cholestorolTextField.setPrefSize(165, 45);
+
+
+// Set the alignment for the StackPane
+        chloaestralStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        chloaestralStackPane.getChildren().addAll(cholestorolTextField, cholestaorolLabel);
+
+// Add the StackPane to the GridPane
+
+        gridPane.add(chloaestralStackPane, 1, 5);
+        cholestorolTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+
+ //// TRIGY LABEL
+        // Create a StackPane to overlay the TextField and Label
+        StackPane triglyStackPane= new StackPane();
+
+// Create a Label for "Haemoglobin"
+        Label trigyLabel = new Label("TRIGLYCERIDES");
+        trigyLabel.setPadding(new Insets(0,0,0,7));
+
+// Create a TextField with a placeholder text
+        TextField trigyTextField = new TextField();
+        trigyTextField.setPromptText("Type here");
+        //  trigyTextField.setPrefWidth(45);
+        trigyTextField.setPrefSize(165, 45);
+
+
+// Set the alignment for the StackPane
+        triglyStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        triglyStackPane.getChildren().addAll(trigyTextField, trigyLabel);
+
+// Add the StackPane to the GridPane
+
+        gridPane.add(triglyStackPane, 1, 6);
+        trigyTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+
+//////////////MEDICATION
+
+        // Create a StackPane to overlay the TextField and Label
+        StackPane medicationStackPane= new StackPane();
+
+// Create a Label for "Haemoglobin"
+        Label medicationLabel = new Label(" MEDICATION");
+        medicationLabel.setPadding(new Insets(0,0,0,7));
+
+// Create a TextField with a placeholder text
+        TextField medicationTextField = new TextField();
+        medicationTextField.setPromptText("Type here");
+        //  medicationTextField.setPrefWidth(45);
+        medicationTextField.setPrefSize(165, 45);
+
+
+// Set the alignment for the StackPane
+        medicationStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        medicationStackPane.getChildren().addAll(medicationTextField, medicationLabel);
+
+// Add the StackPane to the GridPane
+
+        gridPane.add(medicationStackPane, 1, 7);
+
+        medicationTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+///////////////VISUAL AQUITY
+
+
+        // Create a StackPane to overlay the TextArea and Label
+        StackPane visualAquityStackpane = new StackPane();
+
+        // Create a Label for "VISUAL AQUITY"
+        Label visualAquityLabel = new Label("VISUAL AQUITY");
+        visualAquityLabel.setPadding(new Insets(0, 0, 0, 6));
+
+        // Create a TextArea
+        TextArea medicationTextArea = new TextArea();
+        medicationTextArea.setPromptText("Type here");
+
+        // Set styling for the TextArea
+        medicationTextArea.setStyle(
+                "-fx-control-inner-background: derive(-fx-control-inner-background, -30%);"+"-fx-padding: 10 0 0 0;"
+        );
+
+        // Set padding to move the "Type here" text down
+        medicationTextArea.setPrefSize(240, 40);  // Set the preferred size as needed
+
+        // Set padding for the StackPane
+      //  visualAquityStackpane.setPadding(new Insets(0, 0, 0, 0));  // Adjust top padding as needed
+
+        // Add the TextArea and Label to the StackPane
+        visualAquityStackpane.getChildren().addAll(medicationTextArea,visualAquityLabel);
+
+        // Set the alignment for the StackPane
+        StackPane.setAlignment(visualAquityLabel, Pos.TOP_LEFT);
+        StackPane.setAlignment(medicationTextArea,Pos.TOP_LEFT);
+
+
+
+        //    ,visualAquityLabel);
+
+// Add the StackPane to the GridPane
+      //  GridPane.setRowSpan(medicationTextArea,2);
+        // Add the StackPane to the GridPane
+        gridPane.add(visualAquityStackpane, 1, 8);
+        GridPane.setRowSpan(visualAquityStackpane, 2);  // Span two rows in column 1
+
+        medicationTextArea.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1;");
+
+        //// GLAUCOMA HISTORY
+
+        StackPane glaucomaHistoryStackPane = new StackPane();
+       // Label glaucomaHistoryLabel = new Label("GLAUCOMA HISTORY");
+        //glaucomaHistoryLabel.setPadding(new Insets(0,0,0,7));
+
+        ComboBox<String> glaucomaHistoryComboBox = new ComboBox<>();
+        glaucomaHistoryComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        glaucomaHistoryComboBox.getItems().addAll("A", "B");
+        glaucomaHistoryComboBox.setPromptText("select");
+        glaucomaHistoryComboBox.setPrefSize(240, 45);
+        glaucomaHistoryComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+        //HBox hboxForGlaucomaHistoryAndAstrick=new HBox(1);
+        //hboxForPupilDialationLabelandAtrick.setPadding(new Insets(0,0,0,7));
+       // Label astrickForGlaucomaHistory = new Label("*");
+        //astrickForGlaucomaHistory.setStyle("-fx-text-fill: red;");
+        //hboxForGlaucomaHistoryAndAstrick.getChildren().addAll(glaucomaHistoryLabel,astrickForGlaucomaHistory);
+      //  glaucomaHistoryComboBox.requestFocus();
+        String glaucoaHistory="Glaucoma History";
+        Text galaucomaHistory=new Text("*");
+        yearwithdiabatesastrick.setFill(Color.RED);
+        Label glaucomaHistoryLabel=new Label(glaucoaHistory+" ");
+        glaucomaHistoryLabel.setPadding(new Insets(0,0,0,7));
+        glaucomaHistoryLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+        glaucomaHistoryLabel.setGraphic(yearwithdiabatesastrick);
+
+        glaucomaHistoryStackPane.getChildren().addAll(glaucomaHistoryComboBox, glaucomaHistoryLabel);
+        glaucomaHistoryStackPane.setAlignment(Pos.TOP_LEFT);
+       // glaucomaHistoryStackPane.setAlignment(Pos.TOP_LEFT);
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(glaucomaHistoryStackPane, 0, 6);
+
+
+
+        ///////////HYPERTENSION
+        StackPane hypertensionStackPane = new StackPane();
+        Label hyperTensionLabel = new Label("HYPERTENSION");
+        //hyperTensionLabel.setAlignment(Pos.TOP_CENTER);
+        hyperTensionLabel.setPadding(new Insets(0,0,0,7));
+
+        ComboBox<String> hyperTensionComboBox = new ComboBox<>();
+        hyperTensionComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        hyperTensionComboBox.getItems().addAll("A", "B");
+        
+        hyperTensionComboBox.setPromptText("select");
+        hyperTensionComboBox.setPrefSize(240, 45);
+        hyperTensionComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+      // HBox hboxForHyperTension=new HBox(1);
+       // hboxForHyperTension.setPadding(new Insets(0,0,0,7));
+        //Label astrickForGlaucomaHistory = new Label("*");
+        //astrickForGlaucomaHistory.setStyle("-fx-text-fill: red;");
+       // hboxForHyperTension.getChildren().addAll(hyperTensionLabel);
+
+        //hyperTensionComboBox.requestFocus();
+        hypertensionStackPane.getChildren().addAll(hyperTensionComboBox, hyperTensionLabel);
+        hypertensionStackPane.setAlignment(Pos.TOP_LEFT);
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(hypertensionStackPane, 0, 7);
+
+//// SUBJECTIVE DIABATIC CONTROL
+        StackPane subjectiveDiabaticControlStackPane = new StackPane();
+        Label subjectiveDiabaticControllLabel = new Label("SUBJECTIVE DIABATIC CONTROL");
+        subjectiveDiabaticControllLabel.setPadding(new Insets(0,0,0,7));
+        ComboBox<String> subjectiveDiabticControlComboBox = new ComboBox<>();
+        subjectiveDiabticControlComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        subjectiveDiabticControlComboBox.getItems().addAll("A", "B");
+        subjectiveDiabticControlComboBox.setPromptText("Select");
+        subjectiveDiabticControlComboBox.setPrefSize(240, 45);
+        subjectiveDiabticControlComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+        //HBox hboxForHyperTension=new HBox(1);
+       // hboxForHyperTension.setPadding(new Insets(0,0,0,7));
+        //Label astrickForGlaucomaHistory = new Label("*");
+      //  astrickForGlaucomaHistory.setStyle("-fx-text-fill: red;");
+       // hboxForHyperTension.getChildren().add(subjectiveDiabaticControl);
+        //subjectiveDiabticControlComboBox.requestFocus();
+
+
+        subjectiveDiabaticControlStackPane.getChildren().addAll(subjectiveDiabticControlComboBox, subjectiveDiabaticControllLabel);
+        subjectiveDiabaticControlStackPane.setAlignment(Pos.TOP_LEFT);
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(subjectiveDiabaticControlStackPane, 0, 8);
+
+        //////////MOST RECENT BLOOD TEST
+        StackPane mostRecentBolldTestStackPane = new StackPane();
+        Label mostRecentBloodTestLabel = new Label("MOST RECENT BLOOD TEST");
+        
+        mostRecentBloodTestLabel.setPadding(new Insets(0,0,0,7));
+        ComboBox<String> mostRecentBloodTestComboBox = new ComboBox<>();
+        mostRecentBloodTestComboBox.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+        mostRecentBloodTestComboBox.getItems().addAll("A", "B");
+        mostRecentBloodTestComboBox.setPromptText("Select");
+        mostRecentBloodTestComboBox.setPrefSize(240, 45);
+        mostRecentBloodTestComboBox.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+       // HBox hboxForMostRecentBloodTest=new HBox(1);
+        //hboxForMostRecentBloodTest.setPadding(new Insets(0,0,0,7));
+        //Label astrickForGlaucomaHistory = new Label("*");
+       // astrickForGlaucomaHistory.setStyle("-fx-text-fill: red;");
+     //   hboxForMostRecentBloodTest.getChildren().addAll(mostRecentBloodTestLabel);
+     //   mostRecentBloodTestComboBox.requestFocus();
+
+
+        mostRecentBolldTestStackPane.getChildren().addAll(mostRecentBloodTestComboBox,mostRecentBloodTestLabel);
+        mostRecentBolldTestStackPane.setAlignment(Pos.TOP_LEFT);
+        //GridPane.setColumnSpan(pupilDilationStackPane, 2);
+        gridPane.add(mostRecentBolldTestStackPane, 0, 9);
+        //////OTHER HISTORY OR INFORMATION
+        // Create a StackPane to overlay the TextField and Label
+        StackPane otherInformationStackPane= new StackPane();
+
+// Create a Label for "Haemoglobin"
+        Label otherInformationLabel = new Label("Other  history Or Information");
+        otherInformationLabel.setPadding(new Insets(0,0,0,7));
+
+// Create a TextField with a placeholder text
+        TextField otherHistoryTextField = new TextField();
+        otherHistoryTextField.setPromptText("Type here");
+        //  otherHistoryTextField.setPrefWidth(45);
+        otherHistoryTextField.setPrefSize(165, 45);
+
+
+// Set the alignment for the StackPane
+        otherInformationStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+        otherInformationStackPane.getChildren().addAll(otherHistoryTextField, otherInformationLabel);
+
+// Add the StackPane to the GridPane
+
+
+        gridPane.add(otherInformationStackPane, 0, 10);
+        // Set the column span for the TextField
+        GridPane.setColumnSpan(otherInformationStackPane, 2);
+        otherHistoryTextField.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+/////BUTTON UPLOAD IMAGE LATER AND UPLAOD IMAGE NOW
+        Button uploadImagelater=new Button("UPLOAD IMAGES LATER");
+        uploadImagelater.setStyle(
+                "-fx-background-color: transparent; " +  // Set the background color to transparent
+                        "-fx-border-color: orange; " +  // Set the border color to orange
+                        "-fx-text-fill: orange; " +  // Set the text color to orange
+                        "-fx-font-weight: bold; " +  // Set the font weight to bold
+                        "-fx-border-radius: 5;"  // Set the border radius (adjust the value as needed)
+        );
+        uploadImagelater.setPrefWidth(240);
+        gridPane.add(uploadImagelater,0,11);
+
+
+        Button uploadImageNow=new Button("UPLOAD IMAGES NOW");
+        uploadImageNow.setStyle(
+                "-fx-background-color: orange; " +  // Set the background color to orange
+                        "-fx-text-fill: white; " +  // Set the text color to white
+                        "-fx-font-weight: bold; " +  // Set the font weight to bold
+                        "-fx-border-radius: 5;"  // Set the border radius (adjust the value as needed)
+        );
+        
+        uploadImageNow.setPrefWidth(240);
+        gridPane.add(uploadImageNow,1,11);
+        UploadResult uploadResultForAddPatient=new UploadResult();
+        // add action for upload image  now button
+     //   uploadImageNow.setOnAction(event->uploadResultForAddPatient.displayUpload(stage, borderPane, result, fixedRectangleStackPane));
+
+
+        vboxForAddPatient.getChildren().addAll(labelAndCrossHbox,gridPane);
+      // vboxForAddPatient.setPadding(new Insets(100,0,0,40));
+        return vboxForAddPatient;
+    }
+
+    private HBox createHeaderHBox() {
+        HBox headerHBox = new HBox(280);
+        headerHBox.setPadding(new Insets(3,0,0,2));
+        // Create a label for the custom dialog layout
+        Label addPatientLabel = new Label("Create a new patient case");
+        addPatientLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: black; -fx-font-size: 12;");
+
+        // Create a close button with a cross symbol
+       // Button closeButton = new Button("✖");
+        Image closeImage = new Image("file:/C:/Auto_Uplaoder/Exit.png"); // Replace with your image URL
+        ImageView imageView = new ImageView(closeImage);
+        imageView.setFitWidth(8); // Set your desired width
+        imageView.setFitHeight(8); // Set your desired height
+
+        // Handle close button click
+        imageView.setOnMouseClicked(event -> {
+            Stage stage = (Stage) headerHBox.getScene().getWindow();
+            stage.close();
+        });
+        //closeButton.setOnAction(event -> ((Stage) closeButton.getScene().getWindow()).close());
+
+        // Add components to the HBox
+        headerHBox.getChildren().addAll(addPatientLabel,imageView);
+        return headerHBox;
+    }
+    private Label createCustomLabel(String labelText, boolean showRedAsterisk) {
+        // Create a Label for the main text
+        Label label = new Label(labelText);
+
+        // If showRedAsterisk is true, create a Text node for the red asterisk
+        if (showRedAsterisk) {
+            Text redAsterisk = new Text("*");
+            redAsterisk.setFill(Color.RED);
+         // Create an HBox to hold the label text and the red asterisk
+            HBox hbox = new HBox(label, redAsterisk);
+            hbox.setSpacing(5);
+
+            // Set the HBox as the graphic for the main label
+            label.setGraphic(hbox);
+        }
+
+        return label;
+    }
+    private void darkenBackground(Dialog<?> dialog, Stage primaryStage2) {
+        Stage primaryStage = (Stage) dialog.getOwner();
+        if (primaryStage != null) {
+            Scene scene = primaryStage.getScene();
+            if (scene != null) {
+                scene.getRoot().setEffect(new ColorAdjust(0, -0.5, -0.5, 0));
+            }
+        }
+    }
+    private void restoreBackground(Dialog<?> dialog, Stage primaryStage2) {
+        Stage primaryStage = (Stage) dialog.getOwner();
+       
+        if(primaryStage !=null)
+        {
+        	 Scene scene = primaryStage.getScene();
+        	 if(scene !=null)
+        		 scene.getRoot().setEffect(null);
+        }
+       
+    }
+
+}
+
+
+
+

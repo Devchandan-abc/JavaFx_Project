@@ -1,0 +1,5 @@
+#Toggle Switch State
+#Mon Apr 01 10:13:38 IST 2024
+imagepath=C\:\\Users\\DevChandan\\Downloads\\testImages\\testImages
+selectedValueForImage=7
+state=true

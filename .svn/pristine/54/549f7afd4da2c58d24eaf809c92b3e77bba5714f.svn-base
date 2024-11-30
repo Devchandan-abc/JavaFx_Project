@@ -1,0 +1,984 @@
+package com.autouploader;
+
+import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Properties;
+
+public class UploadResult {
+	private TitledPane patientDetailsPane;
+	private TitledPane medicalDetailsPane;
+	private TitledPane uploadTitledPane;
+	private VBox vboxforaccordianandLabel;
+	private VBox rectanglesContainer;
+	private VBox vboxforPateintLabel;
+	private VBox vboxForMainContent;
+	private static int MAX_CHILDREN = 3;
+	private ScrollPane scrollPane;
+	private Properties properties;
+	private Properties properties1;
+	private ComboBox<Integer> imageAmountComboBox;
+	private StackPane uploadStackPane;
+
+	// public Integer defaultImageForComboBox=Dashboard.selectedValue;
+	public void displayUpload(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+		uploadStackPane = new StackPane();
+		// Create labels, image, search textbox, and list of patient names
+		Label queueLabel = new Label("Queue");
+		queueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px"); // Set bold and font size
+		ImageView imageViewRefresh = new ImageView(new Image("file:/C:/Auto_Uplaoder/Refresh.png")); 
+		imageViewRefresh.setFitHeight(13);
+		imageViewRefresh.setFitWidth(13);
+		// Create a colored circle for the background of the "+"
+		Circle refreshCircle = new Circle(10, Color.ORANGE);
+		StackPane refreshStackPane = new StackPane();
+		refreshStackPane.getChildren().addAll(refreshCircle, imageViewRefresh);
+		// setting action on the refresh when it is clicked
+		imageViewRefresh.setOnMouseClicked(e -> {
+			System.out.println("refresing the patient in queue");
+			refreshDataFromQueue("rama");
+		});
+
+		// calling the utilty method that will add our label to the stackpane containg button
+		Button btnForAddPatient=new Button();
+		StackPane plusStackPane=Utilty.addPatientCalled(btnForAddPatient, stage);
+		plusStackPane.setPadding(new Insets(0,0,0,115));
+
+		HBox hbox = new HBox(queueLabel, refreshStackPane);
+		hbox.setSpacing(75);
+		// Inaitalixing the Scrooolpane
+		scrollPane = new ScrollPane();
+		// scrollPane.setStyle("-fx-pref-width: 10px;");
+		scrollPane.setStyle("-fx-thumb: 5px;");
+// add the differnt label in vbox
+		vboxforPateintLabel = new VBox(40);
+		Label patientLabel1 = labelForPatient("Dev Kumar"); // Replace with actual patient name
+		Label patientLabel2 = labelForPatient("Raja Kumar"); // Replace with actual patient name
+		Label patentLabel3 = labelForPatient("Sunny Kumar");
+		Label patentLabel4 = labelForPatient("Sunny Kumar");
+		Label patentLabel5 = labelForPatient("Sunny Kumar");
+		Label patentLabel6 = labelForPatient("Sunny Kumar");
+		Label patentLabel7 = labelForPatient("Devchandan Kumar");
+
+		vboxforPateintLabel.getChildren().addAll(patientLabel1, patientLabel2, patentLabel3, patentLabel4, patentLabel5,
+				patentLabel6, patentLabel7);
+		// setting the content to the scrollpane
+		scrollPane.setContent(vboxforPateintLabel);
+		scrollPane.setStyle("-fx-background-color: white");
+		vboxforPateintLabel.setStyle("-fx-background-color: white;");
+
+		/// creating a Hbox containg image and text field
+		HBox hboxforsearchTextFieldandImage = new HBox();
+		Image searchImageTextBox = new Image("file:/C:/Auto_Uplaoder/search.png");
+		ImageView searchImageView = new ImageView(searchImageTextBox);
+		searchImageView.setFitWidth(10);
+		searchImageView.setFitHeight(10);
+		Button btnContaingSearch=new Button();
+		btnContaingSearch.setGraphic(searchImageView);
+		btnContaingSearch.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		TextField searchTextField = new TextField();
+		searchTextField.setPromptText("search");
+		searchTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 0 0; ");
+		hboxforsearchTextFieldandImage.setStyle("-fx-border-radius: 2;" + "-fx-border-color: black;");
+		hboxforsearchTextFieldandImage.getChildren().addAll(searchTextField, btnContaingSearch);
+		/// setting action for search
+		btnContaingSearch.setOnAction(e->{
+			String searchText = searchTextField.getText().trim();
+			if (searchText.isEmpty()) {
+				// If search text is empty, add the original vbox to the scroll pane
+				scrollPane.setContent(vboxforPateintLabel);
+				// return; // Exit the event handler
+			} else {
+				boolean matchFound = false;
+				for (Node node : vboxforPateintLabel.getChildren()) {
+					if (node instanceof Label) {
+						Label label = (Label) node;
+						if (label.getText().contains(searchText)) { // Use contains() instead of equals() if partial
+																	// matches are allowed
+							// Remove the existing content from the scroll pane
+							// scrollPane.setContent(null);
+							// Set the label as the content of the scroll pane
+							scrollPane.setContent(label);
+							matchFound = true;
+							break; // Exit the loop since we found a match
+						}
+					}
+				}
+				if (!matchFound) {
+					// Reset the content of the scroll pane to the original vbox
+					scrollPane.setContent(vboxforPateintLabel);
+
+				}
+			}
+		});
+
+		/*
+		 * textProperty() of the searchTextField. In JavaFX, many properties of UI
+		 * elements are observable, meaning you can register listeners to be notified
+		 * when their values change. The textProperty() of a TextField represents its
+		 * current text content.
+		 */
+		searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue.isEmpty()) {
+				// If search text is cleared, restore the original vbox inside the scroll pane
+				scrollPane.setContent(vboxforPateintLabel);
+			}
+		});
+
+		// Create a VBox for search textbox and patient names
+		vboxForMainContent = new VBox(hbox, hboxforsearchTextFieldandImage, scrollPane, plusStackPane);
+
+		vboxForMainContent.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+		vboxForMainContent.setPadding(new Insets(20));
+		vboxForMainContent.setPrefSize(200, 500);
+		vboxForMainContent.setSpacing(30);
+		uploadStackPane.getChildren().add(vboxForMainContent);
+
+		// setting margin for vbox
+		StackPane.setMargin(vboxForMainContent, new Insets(10));
+
+		/// Vbox for main content to show in accordian
+		vboxforaccordianandLabel = new VBox();
+		vboxforaccordianandLabel.setPadding(new Insets(20, 0, 0, 0));
+		vboxforaccordianandLabel.setPrefSize(800, 550);
+		// setting the child node in Vbox to centre
+		// vboxforaccordianandLabel.setAlignment(Pos.CENTER);
+		Label lablelforSelectingpatient = new Label();
+		lablelforSelectingpatient.setPadding(new Insets(250, 0, 0, 300));
+		lablelforSelectingpatient.setText("Select a patient from the Queue to Continue");
+		vboxforaccordianandLabel.getChildren().add(lablelforSelectingpatient);
+		vboxforaccordianandLabel.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+		StackPane stackPaneforLabelAndAccordiaon = new StackPane();
+		stackPaneforLabelAndAccordiaon.getChildren().add(vboxforaccordianandLabel);
+// setting padding for vbox
+		vboxforaccordianandLabel.setPadding(new Insets(10));
+
+		stackPaneforLabelAndAccordiaon.setPadding(new Insets(10));
+
+		// HBox for the selectingthe patient
+
+		HBox hboxForPatientandAccordian = new HBox(15);
+		hboxForPatientandAccordian.getChildren().addAll(uploadStackPane, stackPaneforLabelAndAccordiaon);
+		fixedRectangleStackPane.getChildren().clear();
+		fixedRectangleStackPane.getChildren().add(hboxForPatientandAccordian);
+	}
+
+	private VBox refreshDataFromQueue(String name) {
+		Label changedLevel = labelForPatient(name);
+		if (vboxforPateintLabel.getChildren().size() <= MAX_CHILDREN) {
+			// Add your node here
+			vboxforPateintLabel.getChildren().add(changedLevel);
+		} else {
+			System.out.println("Maximum number of children reached.");
+		}
+
+		// Replace the existing vbx with the new one
+		vboxForMainContent.getChildren().set(2, vboxforPateintLabel);
+
+		return vboxforPateintLabel;
+
+	}
+
+	public Accordion createAccordion() {
+		Accordion accordion = new Accordion();
+		// Create TitledPanes for each menu item
+		patientDetailsPane = new TitledPane("Patient Details", createPatientDetailsForm());
+		uploadTitledPane = new TitledPane("Upload", createUpload());
+		medicalDetailsPane = new TitledPane("Medical Details", showMedicalDetailsForm());
+
+		accordion.getPanes().addAll(patientDetailsPane, uploadTitledPane, medicalDetailsPane);
+
+		return accordion;
+	}
+
+	public Label labelForPatient(String name) {
+		Label label = new Label(name);
+		label.setOnMouseClicked(e -> {
+			vboxforaccordianandLabel.getChildren().clear();
+			vboxforaccordianandLabel.getChildren().add(createAccordion());
+		});
+		return label;
+	}
+
+	public VBox createUpload() {
+		VBox uploadContent = new VBox();
+		uploadContent.setSpacing(20);
+		rectanglesContainer = new VBox();
+
+		// Button to upload from computer
+		Button uploadFromComputerButton = new Button("UPLOAD FROM COMPUTER");
+		uploadContent.getChildren().add(uploadFromComputerButton);
+		uploadFromComputerButton.setPrefSize(440, 28);
+		uploadFromComputerButton.setStyle("-fx-background-color: orange; " + // Set the background color to orange
+				"-fx-text-fill: white; " + // Set the text color to white
+				"-fx-font-weight: bold; " + // Set the font weight to bold
+				"-fx-border-radius: 5;" // Set the border radius (adjust the value as needed)
+		);
+		// setting action for uplaodFromComputerButton
+		uploadFromComputerButton.setOnAction(event -> {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.getExtensionFilters()
+					.add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+			properties1 = new Properties();
+			try {
+				// Load the properties file
+				properties1.load(new FileInputStream("settings.properties"));
+
+				// Get the property value and print it out
+				String selectedPath = properties1.getProperty("imagepath");
+				System.out.println("Selected Value: " + selectedPath);
+				fileChooser.setInitialDirectory(new File(selectedPath));
+
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+
+			List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
+
+			if (selectedFiles != null && !selectedFiles.isEmpty()) {
+				// Assuming you have a method to load the images from the selected files
+				List<Image> thumbnailImages = loadImages(selectedFiles);
+
+				// Assuming you have a method to update the rectangles with the thumbnails
+				addImagesToRectangles(thumbnailImages);
+			}
+		});
+
+		/////////// Combo Box for image amount
+		StackPane imageContaingStackpane = new StackPane();
+		Label imageAmountLabel = new Label("IMAGE AMOUNT");
+		imageAmountLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		imageAmountComboBox = new ComboBox<>();
+		// Set the default value to 8
+		// System.out.println(defaultImageForComboBox);
+
+		// imageAmountComboBox.setValue(defaultImageForComboBox);
+		// imageAmountComboBox.setValue( getDefaultImageFromSettingDialog());
+		// System.out.println(defaultImageForComboBox);
+		imageAmountComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+		// Add items to the ComboBox
+		imageAmountComboBox.getItems().addAll(2, 6, 7, 8, 10);
+		// imageAmountComboBox.setValue(getDefaultImageFromSettingDialog());
+		properties = new Properties();
+		try {
+			// Load the properties file
+			properties.load(new FileInputStream("settings.properties"));
+
+			// Get the property value and print it out
+			String selectedValue = properties.getProperty("selectedValueForImage");
+			System.out.println("Selected Value: " + selectedValue);
+			imageAmountComboBox.setValue(Integer.valueOf(selectedValue));
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		// hyperTensionComboBox.setPromptText("select");
+		imageAmountComboBox.setPrefSize(170, 40);
+		imageAmountComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+
+		imageContaingStackpane.getChildren().addAll(imageAmountComboBox, imageAmountLabel);
+		imageContaingStackpane.setAlignment(Pos.TOP_LEFT);
+
+		Text defaultImageText = new Text("The Default Image can\nbe configured in settings");
+		Text changesText = new Text(
+				"making changes here will\nnot reflect in your settings\nand only this specific\nupload");
+		Font boldFont = Font.font("Arial", FontWeight.BOLD, 12);
+		defaultImageText.setFont(boldFont);
+
+		// ComboBox and text components
+		VBox comboBoxAndButtonBox = new VBox(imageContaingStackpane, defaultImageText, changesText);
+		comboBoxAndButtonBox.setPadding(new Insets(0, 135, 0, 0));
+		rectanglesContainer.setSpacing(10);
+		imageAmountComboBox.setOnAction(event -> {
+			rectanglesContainer.getChildren().clear(); // Clear existing rectangles
+
+			int selectedNumber = imageAmountComboBox.getValue();
+			int rows, cols;
+
+			if (selectedNumber <= 4) {
+				rows = 1;
+				cols = selectedNumber;
+			} else {
+				// without using the ceils will get the less rows
+				// ceil function rounds to the nearest integer value
+				rows = (int) Math.ceil(selectedNumber / 4.0);
+				// cols = Math.min(selectedNumber, 4);
+			}
+
+			for (int i = 0; i < rows; i++) {
+				HBox hbox = new HBox(10);
+
+				// Check if it's the last row and adjust the number of columns
+				int adjustedCols = (i == rows - 1) ? (selectedNumber % 4 == 0 ? 4 : selectedNumber % 4) : 4;
+
+				for (int j = 0; j < adjustedCols; j++) {
+					Rectangle rectangle = new Rectangle(100, 100, Color.TRANSPARENT);
+					rectangle.setStrokeType(StrokeType.CENTERED);
+					rectangle.setStroke(Color.BLACK);
+					rectangle.setStrokeWidth(0.8);
+					rectangle.getStrokeDashArray().addAll(3d);
+					rectangle.setFill(null);
+
+					hbox.getChildren().add(rectangle);
+				}
+
+				rectanglesContainer.getChildren().add(hbox);
+
+			}
+		});
+		uploadContent.getChildren().add(rectanglesContainer);
+
+		// Button to upload from computer
+		Button continueButton = new Button("CONTINUE");
+		// uploadContent.getChildren().add(uploadFromComputerButton);
+		continueButton.setPrefSize(440, 28);
+		continueButton.setStyle(
+				// Set the background color to orange
+				"-fx-text-fill: orange; " + // Set the text color to white
+						"-fx-font-weight: bold; " + // Set the font weight to bold
+						"-fx-border-radius: 5;" // Set the border radius (adjust the value as needed)
+		);
+
+		/**
+		 * setting an action on the continue button
+		 */
+		continueButton.setOnAction(event -> {
+			uploadTitledPane.setExpanded(false);
+			medicalDetailsPane.setExpanded(true);
+			// ...
+		});
+		/// this method will add the default 8 rectangle when the uplod is opened
+		// createDefaultRectangles();\
+		// Programmatically trigger the combo box action to create default rectangles
+		imageAmountComboBox.fireEvent(new ActionEvent());
+		// BorderPane to manage positions
+		BorderPane borderPane = new BorderPane();
+		borderPane.setCenter(rectanglesContainer);
+		borderPane.setRight(comboBoxAndButtonBox);
+		uploadContent.getChildren().add(borderPane);
+		uploadContent.getChildren().add(continueButton);
+
+		return uploadContent;
+	}
+
+	public List<Image> loadImages(List<File> selectedFiles) {
+		return selectedFiles.stream().map(file -> new Image(file.toURI().toString())).collect(Collectors.toList());
+
+	}
+
+	private void updateRectanglesWithThumbnails(List<Image> thumbnailImages) {
+		rectanglesContainer.getChildren().clear();
+
+		int selectedNumber = imageAmountComboBox.getValue();
+		rectanglesContainer.getChildren().clear(); // Clear previous rectangles
+
+		int rows = (selectedNumber == 8) ? 2 : 1;
+		int cols = (selectedNumber == 8) ? 4 : selectedNumber;
+
+		Iterator<Image> iterator = thumbnailImages.iterator();
+
+		for (int i = 0; i < rows; i++) {
+			HBox hbox = new HBox(10);
+
+			for (int j = 0; j < cols; j++) {
+				Rectangle rectangle = new Rectangle(100, 100, Color.TRANSPARENT);
+				rectangle.setStrokeType(StrokeType.CENTERED);
+				rectangle.setStroke(Color.BLACK);
+				rectangle.setStrokeWidth(0.8);
+				rectangle.getStrokeDashArray().addAll(3d); // Set dashed line
+				rectangle.setFill(null);
+
+				// If the next element is there, add it to the thumbnail image
+				if (iterator.hasNext()) {
+					Image thumbnailImage = iterator.next();
+					ImageView thumbnailImageView = new ImageView(thumbnailImage);
+					thumbnailImageView.setFitWidth(100);
+					thumbnailImageView.setFitHeight(100);
+					hbox.getChildren().add(thumbnailImageView);
+				} else if (selectedNumber == 8 && j < 4) {
+					// Add dashed rectangles for remaining slots if only fewer images are selected
+					hbox.getChildren().add(rectangle);
+				} else if (selectedNumber != 8 && j < 2) {
+					hbox.getChildren().add(rectangle);
+
+				}
+			}
+			rectanglesContainer.getChildren().add(hbox);
+		}
+	}
+
+	// Method to create a sample form (Replace this with your actual form creation
+	// logic)
+
+	/***
+	 * creating a form
+	 * 
+	 * @return Grid pane
+	 */
+	private GridPane createPatientDetailsForm() {
+		GridPane form = new GridPane();
+		form.setVgap(5);
+		form.setHgap(7);
+
+		// Add form fields (replace these with your actual fields)
+		Label nameLabel = new Label("Name");
+		TextField nameField = new TextField();
+		nameField.setStyle("-fx-background-color: white;");
+		Label mrnLabel = new Label("MRN");
+		TextField mrnTextField = new TextField();
+		mrnTextField.setStyle("-fx-background-color: white;");
+		Label genderLabel = new Label("Gender");
+		TextField genderTextField = new TextField();
+		genderTextField.setStyle("-fx-background-color: white;");
+		Image editingImage = new Image("file:/C:/Auto_Uplaoder/edit.png");
+
+		ImageView editingImageView = new ImageView(editingImage);
+		editingImageView.setFitHeight(20);
+		editingImageView.setFitWidth(25);
+		Label ethnicityLabel = new Label("Ethnicity");
+		TextField ethnicityTextField = new TextField();
+		ethnicityTextField.setStyle("-fx-background-color: white;");
+		Label dobLabel = new Label("DOB");
+		TextField dobTextField = new TextField();
+		dobTextField.setStyle("-fx-background-color: white;");
+// event handling whern btn is clicked
+		Button btnForeditingPatient=new Button();
+		btnForeditingPatient.setGraphic(editingImageView);
+		btnForeditingPatient.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+			btnForeditingPatient.setOnAction(e->{
+			// Set form fields editable
+			nameField.setEditable(true);
+			mrnTextField.setEditable(true);
+			genderTextField.setEditable(true);
+			ethnicityTextField.setEditable(true);
+			dobTextField.setEditable(true);
+			// Show editing symbol
+			editingImageView.setVisible(true);
+		});
+
+		//// ADDING SUBMIT BUTTON
+		Button uploadButton = new Button("UPLOAD");
+
+		uploadButton.setPrefSize(450, 30);
+		uploadButton.setStyle("-fx-background-color: orange; " + // Set the background color to orange
+				"-fx-text-fill: white; " + // Set the text color to white
+				"-fx-font-weight: bold; " + // Set the font weight to bold
+				"-fx-border-radius: 5;" // Set the border radius (adjust the value as needed)
+		);
+		uploadButton.setOnAction(e -> {
+
+			patientDetailsPane.setExpanded(false);
+			uploadTitledPane.setExpanded(true);
+		});
+		form.add(uploadButton, 0, 3);
+		GridPane.setColumnSpan(uploadButton, 5);
+		// Add fields to the form
+		form.add(nameLabel, 0, 0);
+		form.add(nameField, 1, 0);
+		form.add(genderLabel, 2, 0);
+		form.add(genderTextField, 3, 0);
+		form.add(btnForeditingPatient, 4, 0);
+		form.add(mrnLabel, 0, 1);
+		form.add(mrnTextField, 1, 1);
+		form.add(ethnicityLabel, 2, 1);
+		form.add(ethnicityTextField, 3, 1);
+		form.add(dobLabel, 0, 2);
+		form.add(dobTextField, 1, 2);
+		return form;
+	}
+
+
+	/**
+	 * creating medical record form
+	 * 
+	 * @return gridpane
+	 */
+
+	private GridPane showMedicalDetailsForm() {
+		GridPane medicalrecordGridPane = new GridPane();
+		medicalrecordGridPane.setHgap(3);
+		medicalrecordGridPane.setVgap(3);
+		StackPane pupilDilationStackPane = new StackPane();
+		pupilDilationStackPane.setAlignment(Pos.TOP_LEFT);
+		Text redAsterisk = new Text("*");
+		redAsterisk.setFill(Color.RED);
+
+		// Combine the Text node and the rest of the label text
+		String pupilDilationStringLabel = "Pupil Dilation";
+		Label pupilDilationLabel = new Label(pupilDilationStringLabel + " ");
+		// text will be set as the graphic to the label
+		pupilDilationLabel.setGraphic(redAsterisk);
+		// the astrick trext will be put right to the label
+		pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		pupilDilationLabel.setPadding(new Insets(0, 0, 0, 7));
+		ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+
+// Add items to the ComboBox
+		pupilDilationComboBox.getItems().addAll("A", "B");
+		pupilDilationComboBox.setPromptText("select");
+		pupilDilationComboBox.setPrefSize(220, 45);
+		pupilDilationComboBox.setStyle(
+				"-fx-background-color: transparent, white; -fx-border-width: 0 0 1 0, 1; -fx-border-color: black, black; -fx-border-radius: 5; -fx-text-fill: black;");
+		HBox hboxForPupilDialationLabelandAtrick = new HBox(3);
+		pupilDilationStackPane.getChildren().addAll(pupilDilationComboBox, pupilDilationLabel);
+		pupilDilationStackPane.setAlignment(Pos.TOP_LEFT);
+		medicalrecordGridPane.add(pupilDilationStackPane, 0, 0);
+
+		/// Haemaoglobin 1Ac
+		// Create a StackPane to overlay the TextField and Label
+		StackPane haemoglobinStackPane = new StackPane();
+
+// Create a Label for "Haemoglobin"
+		Label haemoglobinLabel = new Label("Haemoglobin");
+		haemoglobinLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		// Create a TextField with a placeholder text
+		TextField haemoglobinTextField = new TextField();
+		haemoglobinTextField.setPromptText("type here");
+		haemoglobinTextField.setPrefSize(220, 45);
+// Set the alignment for the StackPane
+		haemoglobinStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+		haemoglobinStackPane.getChildren().addAll(haemoglobinTextField, haemoglobinLabel);
+
+// Add the StackPane to the GridPane
+		medicalrecordGridPane.add(haemoglobinStackPane, 1, 0);
+		haemoglobinTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+		// last eye exam
+		StackPane lastEyeExamStackPane = new StackPane();
+
+		// Create a Text node for the "*" symbol
+		Text redAsterisklastEyeExam = new Text("*");
+		// redAsterisk.setStyle(Color.RED);
+		redAsterisklastEyeExam.setFill(Color.RED);
+
+		// Combine the Text node and the rest of the label text
+		String lastEye = "Last Eye Exam";
+		Label lastEyeLabel = new Label(lastEye + " ");
+		// text will be set as the graphic to the label
+		lastEyeLabel.setGraphic(redAsterisklastEyeExam);
+		lastEyeLabel.setPadding(new Insets(0, 0, 0, 7));
+		lastEyeLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+
+		// Label lastEyeExamLabel = new Label("Last Eye Exam ");
+
+		ComboBox<String> lastEyeExamComboBox = new ComboBox<>();
+		lastEyeExamComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+		lastEyeExamComboBox.getItems().addAll("A", "B");
+		lastEyeExamComboBox.setPromptText("Select");
+		lastEyeExamComboBox.setPrefSize(220, 45);
+		lastEyeExamComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+		lastEyeExamStackPane.getChildren().addAll(lastEyeExamComboBox, lastEyeLabel);
+		lastEyeExamStackPane.setAlignment(Pos.TOP_LEFT);
+
+		// GridPane.setColumnSpan(pupilDilationStackPane, 2);
+		medicalrecordGridPane.add(lastEyeExamStackPane, 0, 1);
+
+		///// for USUAL BLOOD SUGAR LEVEL
+		// Create a StackPane to overlay the TextField and Label
+		StackPane usualBloodSugarLevelStackPane = new StackPane();
+
+// Create a Label for "Haemoglobin"
+		Label usualBloodSugarLevelLAbel = new Label("USUAL BLOOD SUGAR LEVEL");
+		usualBloodSugarLevelLAbel.setPadding(new Insets(0, 0, 0, 7));
+
+// Create a TextField with a placeholder text
+		TextField usualBloodSugarLevelTextField = new TextField();
+		usualBloodSugarLevelTextField.setPromptText("Type here");
+		// usualBloodSugarLevelTextField.setPrefWidth(45);
+		usualBloodSugarLevelTextField.setPrefSize(220, 45);
+
+// Set the alignment for the StackPane
+		usualBloodSugarLevelStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+		usualBloodSugarLevelStackPane.getChildren().addAll(usualBloodSugarLevelTextField, usualBloodSugarLevelLAbel);
+
+// Add the StackPane to the GridPane
+		// GridPane.setColumnSpan(haemoglobinStackPane, 2);
+		medicalrecordGridPane.add(usualBloodSugarLevelStackPane, 1, 1);
+		usualBloodSugarLevelTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+		StackPane yearWithDiabatesStackPane = new StackPane();
+		Label yearWithDiabatesLabel = new Label("YEAR WITH DIABATES");
+
+		ComboBox<String> yearWithDiabatesComboBox = new ComboBox<>();
+		yearWithDiabatesComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+		yearWithDiabatesComboBox.getItems().addAll("A", "B");
+		yearWithDiabatesComboBox.setPromptText("select");
+		yearWithDiabatesComboBox.setPrefSize(220, 45);
+		yearWithDiabatesComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+
+		String yearwithdiabltes = "Year With Diabates";
+		Text yearwithdiabatesastrick = new Text("*");
+		yearwithdiabatesastrick.setFill(Color.RED);
+		Label yearWithDibatesLabel = new Label(yearwithdiabltes + " ");
+		yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+		yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		yearWithDibatesLabel.setGraphic(yearwithdiabatesastrick);
+
+		yearWithDiabatesStackPane.getChildren().addAll(yearWithDiabatesComboBox, yearWithDibatesLabel);
+		yearWithDiabatesStackPane.setAlignment(Pos.TOP_LEFT);
+
+		// GridPane.setColumnSpan(pupilDilationStackPane, 2);
+		medicalrecordGridPane.add(yearWithDiabatesStackPane, 0, 2);
+		// Create a StackPane to overlay the TextField and Label
+		StackPane chloaestralStackPane = new StackPane();
+
+// Create a Label for "Haemoglobin"
+		Label cholestaorolLabel = new Label("CHOLOLESTROL");
+		cholestaorolLabel.setPadding(new Insets(0, 0, 0, 7));
+
+// Create a TextField with a placeholder text
+		TextField cholestorolTextField = new TextField();
+		cholestorolTextField.setPromptText("Type here");
+		// cholestorolTextField.setPrefWidth(45);
+		cholestorolTextField.setPrefSize(220, 45);
+
+// Set the alignment for the StackPane
+		chloaestralStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+		chloaestralStackPane.getChildren().addAll(cholestorolTextField, cholestaorolLabel);
+
+// Add the StackPane to the GridPane
+
+		medicalrecordGridPane.add(chloaestralStackPane, 1, 2);
+		cholestorolTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+		// Create a StackPane to overlay the TextField and Label
+		StackPane triglyStackPane = new StackPane();
+
+// Create a Label for "Haemoglobin"
+		Label trigyLabel = new Label("TRIGLYCERIDES");
+		trigyLabel.setPadding(new Insets(0, 0, 0, 7));
+
+// Create a TextField with a placeholder text
+		TextField trigyTextField = new TextField();
+		trigyTextField.setPromptText("Type here");
+		// trigyTextField.setPrefWidth(45);
+		trigyTextField.setPrefSize(220, 45);
+
+// Set the alignment for the StackPane
+		triglyStackPane.setAlignment(Pos.TOP_LEFT);
+
+// Add the TextField and Label to the StackPane
+		triglyStackPane.getChildren().addAll(trigyTextField, trigyLabel);
+
+// Add the StackPane to the GridPane
+
+		medicalrecordGridPane.add(triglyStackPane, 1, 3);
+		trigyTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+//// GLAUCOMA HISTORY
+
+		StackPane glaucomaHistoryStackPane = new StackPane();
+		ComboBox<String> glaucomaHistoryComboBox = new ComboBox<>();
+		glaucomaHistoryComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+		// Add items to the ComboBox
+		glaucomaHistoryComboBox.getItems().addAll("A", "B");
+		glaucomaHistoryComboBox.setPromptText("select");
+		glaucomaHistoryComboBox.setPrefSize(220, 45);
+		glaucomaHistoryComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+		String glaucoaHistory = "Glaucoma History";
+		Text galaucomaHistory = new Text("*");
+		yearwithdiabatesastrick.setFill(Color.RED);
+		Label glaucomaHistoryLabel = new Label(glaucoaHistory + " ");
+		glaucomaHistoryLabel.setPadding(new Insets(0, 0, 0, 7));
+		glaucomaHistoryLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		glaucomaHistoryLabel.setGraphic(yearwithdiabatesastrick);
+		glaucomaHistoryStackPane.getChildren().addAll(glaucomaHistoryComboBox, glaucomaHistoryLabel);
+		glaucomaHistoryStackPane.setAlignment(Pos.TOP_LEFT);
+		medicalrecordGridPane.add(glaucomaHistoryStackPane, 0, 3);
+
+///////////HYPERTENSION
+
+		StackPane hypertensionStackPane = new StackPane();
+		Label hyperTensionLabel = new Label("HYPERTENSION");
+		// hyperTensionLabel.setAlignment(Pos.TOP_CENTER);
+		hyperTensionLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		ComboBox<String> hyperTensionComboBox = new ComboBox<>();
+		hyperTensionComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+		// Add items to the ComboBox
+		hyperTensionComboBox.getItems().addAll("A", "B");
+		hyperTensionComboBox.setPromptText("select");
+		hyperTensionComboBox.setPrefSize(220, 45);
+		hyperTensionComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+		hypertensionStackPane.getChildren().addAll(hyperTensionComboBox, hyperTensionLabel);
+		hypertensionStackPane.setAlignment(Pos.TOP_LEFT);
+		medicalrecordGridPane.add(hypertensionStackPane, 0, 4);
+
+//////////////MEDICATION
+
+		// Create a StackPane to overlay the TextField and Label
+		StackPane medicationStackPane = new StackPane();
+		// Create a Label for "Haemoglobin"
+		Label medicationLabel = new Label(" MEDICATION");
+		medicationLabel.setPadding(new Insets(0, 0, 0, 7));
+		// Create a TextField with a placeholder text
+		TextField medicationTextField = new TextField();
+		medicationTextField.setPromptText("Type here");
+		// medicationTextField.setPrefWidth(45);
+		medicationTextField.setPrefSize(220, 45);
+		// Set the alignment for the StackPane
+		medicationStackPane.setAlignment(Pos.TOP_LEFT);
+		// Add the TextField and Label to the StackPane
+		medicationStackPane.getChildren().addAll(medicationTextField, medicationLabel);
+		// Add the StackPane to the GridPane
+		medicalrecordGridPane.add(medicationStackPane, 1, 4);
+		medicationTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+//// SUBJECTIVE DIABATIC CONTROL
+		StackPane subjectiveDiabaticControlStackPane = new StackPane();
+		Label subjectiveDiabaticControllLabel = new Label("SUBJECTIVE DIABATIC CONTROL");
+		subjectiveDiabaticControllLabel.setPadding(new Insets(0, 0, 0, 7));
+		ComboBox<String> subjectiveDiabticControlComboBox = new ComboBox<>();
+		subjectiveDiabticControlComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+		// Add items to the ComboBox
+		subjectiveDiabticControlComboBox.getItems().addAll("A", "B");
+		subjectiveDiabticControlComboBox.setPromptText("Select");
+		subjectiveDiabticControlComboBox.setPrefSize(220, 45);
+		subjectiveDiabticControlComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+		subjectiveDiabaticControlStackPane.getChildren().addAll(subjectiveDiabticControlComboBox,
+				subjectiveDiabaticControllLabel);
+		subjectiveDiabaticControlStackPane.setAlignment(Pos.TOP_LEFT);
+		medicalrecordGridPane.add(subjectiveDiabaticControlStackPane, 0, 5);
+
+		////////// MOST RECENT BLOOD TEST
+		StackPane mostRecentBolldTestStackPane = new StackPane();
+		Label mostRecentBloodTestLabel = new Label("MOST RECENT BLOOD TEST");
+
+		mostRecentBloodTestLabel.setPadding(new Insets(0, 0, 0, 7));
+		ComboBox<String> mostRecentBloodTestComboBox = new ComboBox<>();
+		mostRecentBloodTestComboBox
+				.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 1 0; -fx-border-color: black;");
+// Add items to the ComboBox
+		mostRecentBloodTestComboBox.getItems().addAll("A", "B");
+		mostRecentBloodTestComboBox.setPromptText("Select");
+		mostRecentBloodTestComboBox.setPrefSize(220, 45);
+		mostRecentBloodTestComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+
+		mostRecentBolldTestStackPane.getChildren().addAll(mostRecentBloodTestComboBox, mostRecentBloodTestLabel);
+		mostRecentBolldTestStackPane.setAlignment(Pos.TOP_LEFT);
+		medicalrecordGridPane.add(mostRecentBolldTestStackPane, 0, 6);
+///////////////VISUAL AQUITY
+
+		 VBox vboxForVisualAquity=new VBox(10);
+	        vboxForVisualAquity.setStyle("-fx-border-color: black; -fx-border-width: 1px;-fx-border-radius:3");
+	        
+	        TextArea medicationTextArea = new TextArea();
+	        medicationTextArea.setPrefSize(240, 70);
+	        
+	        medicationTextArea.setPromptText("type here");
+	        medicationTextArea.setStyle("-fx-background-color:transparent; -fx-border-width: 0 0 0 0; -fx-border-color: white;");
+	        Label visualAquityLabel = new Label("VISUAL AQUITY");
+	        visualAquityLabel.setPadding(new Insets(0,0,0,5));
+	        vboxForVisualAquity.getChildren().addAll(visualAquityLabel,medicationTextArea);
+	        vboxForVisualAquity.setPrefSize(240, 90);
+	     
+	        medicalrecordGridPane.add( vboxForVisualAquity, 1,5);
+	        
+	        GridPane.setRowSpan(vboxForVisualAquity, 2);  // Span two rows in column 1
+
+		////// OTHER HISTORY OR INFORMATION
+	        
+		// Create a StackPane to overlay the TextField and Label
+		StackPane otherInformationStackPane = new StackPane();
+		// Create a Label for "Haemoglobin"
+		Label otherInformationLabel = new Label("Other  history Or Information");
+		otherInformationLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		// Create a TextField with a placeholder text
+		TextField otherHistoryTextField = new TextField();
+		otherHistoryTextField.setPromptText("Type here");
+		// otherHistoryTextField.setPrefWidth(45);
+		otherHistoryTextField.setPrefSize(165, 45);
+		// Set the alignment for the StackPane
+		otherInformationStackPane.setAlignment(Pos.TOP_LEFT);
+
+		// Add the TextField and Label to the StackPane
+		otherInformationStackPane.getChildren().addAll(otherHistoryTextField, otherInformationLabel);
+
+		// Add the StackPane to the GridPane
+		medicalrecordGridPane.add(otherInformationStackPane, 0, 7);
+		// Set the column span for the TextField
+		// making the clolumn span to two
+		GridPane.setColumnSpan(otherInformationStackPane, 2);
+
+		otherHistoryTextField
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+		//// ADDING SUBMIT BUTTON
+		Button submitButton = new Button("SUBMIT");
+
+		submitButton.setPrefSize(500, 35);
+		submitButton.setStyle("-fx-background-color: orange; " + // Set the background color to orange
+				"-fx-text-fill: white; " + // Set the text color to white
+				"-fx-font-weight: bold; " + // Set the font weight to bold
+				"-fx-border-radius: 5;" // Set the border radius (adjust the value as needed)
+		);
+		medicalrecordGridPane.add(submitButton, 0, 8);
+		GridPane.setColumnSpan(submitButton, 2);
+		return medicalrecordGridPane;
+	}
+
+	// Helper method to load the image from file
+	private Image loadImage(File file) {
+		return new Image(file.toURI().toString());
+	}
+	// Helper method to update rectangles with the thumbnail
+
+	/**
+	 *
+	 * @param thumbnailImage
+	 */
+	private void updateRectanglesWithThumbnail(Image thumbnailImage) {
+		// Assuming rectanglesContainer is the VBox containing the rectangles
+		// rectanglesContainer=new VBox();
+		rectanglesContainer.getChildren().clear();
+		int selectedNumber = imageAmountComboBox.getValue();
+		System.out.println(selectedNumber);
+		rectanglesContainer.getChildren().clear(); // Clear previous rectangles
+
+		int rows = (selectedNumber == 8) ? 2 : 1;
+		System.out.println(rows);
+		// if the selected no is compared and it is 8 than two rows will be there
+		// otherwise 1
+		int cols = (selectedNumber == 8) ? 4 : selectedNumber;
+		System.out.println(cols);
+
+		for (int i = 0; i < rows; i++) {
+			HBox hbox = new HBox(10);
+			for (int j = 0; j < cols; j++) {
+				Rectangle rectangle = new Rectangle(100, 100, Color.TRANSPARENT);
+				rectangle.setStrokeType(StrokeType.CENTERED);
+				rectangle.setStroke(Color.BLACK);
+				rectangle.setStrokeWidth(0.8);
+				rectangle.getStrokeDashArray().addAll(3d); // Set dashed line
+				rectangle.setFill(null);
+				// Image thumbnailImage=new Image("");
+				// Assuming you have an ImageView to display the thumbnail
+				ImageView thumbnailImageView = new ImageView(thumbnailImage);
+				thumbnailImageView.setFitWidth(100);
+				thumbnailImageView.setFitHeight(100);
+
+				hbox.getChildren().add(thumbnailImageView);
+			}
+			rectanglesContainer.getChildren().add(hbox);
+		}
+	}
+
+	/**
+	 * method to create a default rectagle when the uploadTiled pane is opened
+	 */
+	private void createDefaultRectangles() {
+		int rows = 2;
+		int cols = 4;
+
+		for (int i = 0; i < rows; i++) {
+			HBox hbox = new HBox(10);
+			for (int j = 0; j < cols; j++) {
+				Rectangle rectangle = new Rectangle(100, 100, Color.TRANSPARENT);
+				// rectangle.setStrokeType(StrokeType.CENTERED);
+				rectangle.setStroke(Color.BLACK);
+				rectangle.setStrokeWidth(0.8);
+				rectangle.getStrokeDashArray().addAll(3d); // Set dashed line
+				rectangle.setFill(null);
+
+				hbox.getChildren().add(rectangle);
+			}
+			rectanglesContainer.getChildren().add(hbox);
+		}
+	}
+
+	/// check the max node if reached
+	private void addNodeIfAllowed(VBox vbox) {
+		if (vbox.getChildren().size() < MAX_CHILDREN) {
+			// Add your node here
+			Button newNode = new Button("New Node");
+			vbox.getChildren().add(newNode);
+		} else {
+			System.out.println("Maximum number of children reached.");
+		}
+	}
+
+	private void addImagesToRectangles(List<Image> thumbnailImages) {
+		// Create an iterator for the thumbnail images
+		Iterator<Image> iterator = thumbnailImages.iterator();
+
+		// Iterate over the children of the rectanglesContainer
+		for (Node node : rectanglesContainer.getChildren()) {
+			// Check if the child is an HBox
+			if (node instanceof HBox) {
+				HBox hbox = (HBox) node;
+
+				// Iterate over the children of the HBox (presumably rectangles)
+				for (Node rectangleNode : hbox.getChildren()) {
+					// Check if the child is a Rectangle
+					if (rectangleNode instanceof Rectangle) {
+						Rectangle rectangle = (Rectangle) rectangleNode;
+
+						// Check if the rectangle is empty (fill is null) and there are more images to
+						// add
+						if (rectangle.getFill() == null && iterator.hasNext()) {
+							// Get the next thumbnail image
+							Image thumbnailImage = iterator.next();
+
+							// Create an ImageView with the thumbnail image
+							ImageView thumbnailImageView = new ImageView(thumbnailImage);
+							thumbnailImageView.setFitWidth(100);
+							thumbnailImageView.setFitHeight(100);
+
+							// Fill the rectangle with the thumbnail image
+							rectangle.setFill(new ImagePattern(thumbnailImage));
+						}
+					}
+				}
+			}
+		}
+	}
+
+}

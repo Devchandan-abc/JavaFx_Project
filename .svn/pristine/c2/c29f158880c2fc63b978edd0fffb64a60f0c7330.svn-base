@@ -1,0 +1,53 @@
+package com.autouploader;
+
+import java.util.Date;
+
+public class PatientTable {
+    private String name;
+    private Integer caseId;
+    private Integer mrn;
+    private String uploadStatus;
+    private String caseStatus;
+    private Date dateCreated;
+    private String uploadedBy;
+
+    public PatientTable(String name, Integer caseId, Integer mrn, String uploadStatus, String caseStatus, Date dateCreated, String uploadedBy) {
+        this.name = name;
+        this.caseId = caseId;
+        this.mrn = mrn;
+        this.uploadStatus = uploadStatus;
+        this.caseStatus = caseStatus;
+        this.dateCreated = dateCreated;
+        this.uploadedBy = uploadedBy;
+    }
+
+    // Add getter methods for each property
+    public String getName() {
+        return name;
+    }
+
+    public Integer getCaseId() {
+        return caseId;
+    }
+
+    public Integer getMrn() {
+        return mrn;
+    }
+
+    public String getUploadStatus() {
+        return uploadStatus;
+    }
+
+    public String getCaseStatus() {
+        return caseStatus;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public String getUploadedBy() {
+        return uploadedBy;
+    }
+
+}

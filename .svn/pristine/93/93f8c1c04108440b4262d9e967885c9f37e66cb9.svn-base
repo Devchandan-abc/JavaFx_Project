@@ -1,0 +1,19 @@
+package com.autouploader;
+
+import javafx.scene.control.Dialog;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class AddNewPatient {
+
+    public void handleAddPatient(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+        System.out.println(result);
+        VBox vboxForDialog=new VBox();
+        Dialog addPatientDialog=new Dialog();
+        addPatientDialog.setTitle("Dialog box");
+
+//fixedRectangleStackPane.getChildren().add(addPatientDialog);
+    }
+}

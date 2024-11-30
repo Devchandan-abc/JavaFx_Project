@@ -1,0 +1,83 @@
+package com.autouploader;
+
+import java.util.Date;
+
+public class PatientTable {
+    private String NAME;
+    private Integer CASEID;
+    private Integer MRN;
+    private String UPLOADSTATUS;
+
+    public PatientTable(String NAME, Integer CASEID, Integer MRN, String UPLOADSTATUS, String CASESTATUS, Date DATECREATED, String UPLOADEDBY) {
+        this.NAME = NAME;
+        this.CASEID = CASEID;
+        this.MRN = MRN;
+        this.UPLOADSTATUS = UPLOADSTATUS;
+        this.CASESTATUS = CASESTATUS;
+        this.DATECREATED = DATECREATED;
+        this.UPLOADEDBY = UPLOADEDBY;
+    }
+
+    private String CASESTATUS;
+
+    private Date DATECREATED;
+
+    public String getNAME() {
+        return NAME;
+    }
+
+    public void setNAME(String NAME) {
+        this.NAME = NAME;
+    }
+
+    public Integer getCASEID() {
+        return CASEID;
+    }
+
+    public void setCASEID(Integer CASEID) {
+        this.CASEID = CASEID;
+    }
+
+    public Integer getMRN() {
+        return MRN;
+    }
+
+    public void setMRN(Integer MRN) {
+        this.MRN = MRN;
+    }
+
+    public String getUPLOADSTATUS() {
+        return UPLOADSTATUS;
+    }
+
+    public void setUPLOADSTATUS(String UPLOADSTATUS) {
+        this.UPLOADSTATUS = UPLOADSTATUS;
+    }
+
+    public String getCASESTATUS() {
+        return CASESTATUS;
+    }
+
+    public void setCASESTATUS(String CASESTATUS) {
+        this.CASESTATUS = CASESTATUS;
+    }
+
+    public Date getDATECREATED() {
+        return DATECREATED;
+    }
+
+    public void setDATECREATED(Date DATECREATED) {
+        this.DATECREATED = DATECREATED;
+    }
+
+    public String getUPLOADEDBY() {
+        return UPLOADEDBY;
+    }
+
+    public void setUPLOADEDBY(String UPLOADEDBY) {
+        this.UPLOADEDBY = UPLOADEDBY;
+    }
+
+    private  String UPLOADEDBY;
+
+}

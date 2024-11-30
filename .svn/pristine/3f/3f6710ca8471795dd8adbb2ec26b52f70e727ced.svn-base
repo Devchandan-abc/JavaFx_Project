@@ -1,0 +1,222 @@
+package com.autouploader;
+
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+
+public class DashBoardResult {
+
+    public void displayResult(Stage stageForDashBoardResult, BorderPane borderPane,String result, StackPane fixedRec)
+    {
+        HBox resultContent = new HBox(10);
+        resultContent.setAlignment(Pos.TOP_LEFT);
+
+        // Greeting based on the time of the day and the username
+        String greeting = generateGreeting();
+        Label greetingLabel = new Label(greeting);
+        greetingLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // Today's date label
+        Label dateLabel = new Label("Jan 23, 2024");
+        dateLabel.setStyle("-fx-font-size: 15 px;");
+
+        //Site Statistics section
+        VBox siteStatsBox = siteStatics();
+
+        // Add components to the resultContent VBox
+        resultContent.getChildren().addAll(greetingLabel, dateLabel, siteStatsBox);
+        fixedRec.getChildren().clear();
+        fixedRec.getChildren().add(resultContent);
+
+
+        // Optional: Print the result to verify its content
+        System.out.println("Result Content: " + result);
+
+        //borderPane.setCenter(fixedRec);
+
+
+        // Set the updated scene
+       // Scene dashboardScene = new Scene(borderPane, 1000, 1000);
+      //  stageForDashBoardResult.setScene(dashboardScene);
+    }
+    public String generateGreeting()
+    {
+        return "Good Morning, Dev";
+    }
+
+    private VBox siteStatics()
+    {
+        VBox siteStatsBox = new VBox(10);
+        // Create a Rectangle to enclose the content
+        Rectangle statsRectangle = new Rectangle();
+        statsRectangle.setFill(Color.WHITE);
+        statsRectangle.setStroke(Color.BLACK); // Set the border color (optional)
+        statsRectangle.setStrokeWidth(1.0); // Set the border width (optional)
+        statsRectangle.setHeight(200);
+        statsRectangle.setWidth(400);
+
+
+        // Create the Site Statistics header (heading and dropdown in the same row)
+        HBox siteStatsHeader = createSiteStatsHeader();
+
+        // Row for patient statistics
+        HBox patientStatsRow = createPatientStatsRow();
+
+        // Add components to the VBox (not StackPane)
+        siteStatsBox.getChildren().addAll(statsRectangle, siteStatsHeader, patientStatsRow);
+
+        return siteStatsBox;
+    }
+
+    private HBox createPatientStatsRow() {
+        HBox patientStatsRow = new HBox(20);
+
+        // Create VBox for each statistic
+        VBox screenedBox = createStatisticBox("50","Patients Screened");
+        VBox referredBox = createStatisticBox("100","Patients Referred");
+        VBox encounterBox = createStatisticBox("105","Patients Encountered");
+
+        // Add VBox for each statistic to the HBox
+        patientStatsRow.getChildren().addAll(screenedBox, referredBox, encounterBox);
+
+        return patientStatsRow;
+    }
+    private VBox createStatisticBox( String value,String label) {
+        VBox statisticBox = new VBox(2);
+
+        // Create labels for the statistic
+        Label valueLabel = new Label(value);
+        Label labelLabel = new Label(label);
+
+
+        // Add labels to the VBox
+        statisticBox.getChildren().addAll(valueLabel,labelLabel);
+
+        // Align the VBox at the top
+        statisticBox.setAlignment(Pos.TOP_CENTER);
+
+        return statisticBox;
+    }
+    private HBox createSiteStatsHeader() {
+        HBox siteStatsHeader = new HBox(170);
+
+        // Heading for Site Statistics
+        Label headingLabel = new Label("Site Statistics");
+        headingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        // Dropdown for time period selection
+        ComboBox<String> timePeriodDropdown = new ComboBox<>();
+        timePeriodDropdown.getItems().addAll("This Month", "Last Week");
+        timePeriodDropdown.setValue("This Month");
+
+        // Add components to the HBox
+        siteStatsHeader.getChildren().addAll(headingLabel, timePeriodDropdown);
+
+        return siteStatsHeader;
+    }
+   /* public void displayResult(String result, StackPane fixedRectangleStackPane) {
+        VBox resultContent = new VBox(10);
+        resultContent.setAlignment(Pos.TOP_LEFT);
+
+        // Greeting based on the time of the day and the username
+        String greeting = generateGreeting();
+        Label greetingLabel = new Label(greeting);
+        greetingLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // Date label
+        Label dateLabel = new Label("Jan 23, 2023");
+        dateLabel.setStyle("-fx-font-size: 14px;");
+
+        // Site statistics section
+    //    HBox siteStatisticsBox = createStatisticsBox();
+
+        // Upcoming appointments section
+       // TableView<Appointment> upcomingAppointmentsTable = createUpcomingAppointmentsTable();
+
+        // Add components to the resultContent VBox
+       // resultContent.getChildren().addAll(greetingLabel, dateLabel, siteStatisticsBox, upcomingAppointmentsTable);
+
+        // Update the content of the fixed rectangle with the resultContent
+//        fixedRectangleStackPane.getChildren().set(1, resultContent); // Assuming the VBox is at index 1
+        if (fixedRectangleStackPane.getChildren().size() > 1) {
+            fixedRectangleStackPane.getChildren().set(1, resultContent);
+        } else {
+            fixedRectangleStackPane.getChildren().add(resultContent);
+        }
+    }
+    private String generateGreeting() {
+        // Logic to generate greeting based on the time of the day and username
+        // For example, you can use the current time to determine the greeting
+        // and retrieve the username dynamically.
+        return "Good Morning, Dev";
+    }
+
+   /* private HBox createStatisticsBox() {
+        HBox statisticsBox = new HBox(20);
+        statisticsBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Add labels and values for site statistics
+        Label patientsScreenedLabel = new Label("Patients Screened");
+        Label patientsScreenedValue = new Label("100"); // Replace with actual value
+
+        Label referredOutLabel = new Label("Referred Out");
+        Label referredOutValue = new Label("25"); // Replace with actual value
+
+        Label totalEncounterLabel = new Label("Total Encounter");
+        Label totalEncounterValue = new Label("150"); // Replace with actual value
+
+        // Add labels and values to the HBox
+        statisticsBox.getChildren().addAll(
+                createStatisticLabelValueBox(patientsScreenedLabel, patientsScreenedValue),
+                createStatisticLabelValueBox(referredOutLabel, referredOutValue),
+                createStatisticLabelValueBox(totalEncounterLabel, totalEncounterValue)
+        );
+
+        return statisticsBox;
+    }
+    /*(private HBox createStatisticLabelValueBox(Label label, Label value) {
+        HBox labelValueBox = new HBox(5);
+        labelValueBox.setAlignment(Pos.CENTER_LEFT);
+        labelValueBox.getChildren().addAll(label, value);
+        return labelValueBox;
+    }
+
+    /*private TableView<Appointment> createUpcomingAppointmentsTable() {
+        // Logic to create and populate the TableView with upcoming appointments data
+        // You can use the TableView API to define columns and add data dynamically
+        TableView<Appointment> appointmentsTable = new TableView<>();
+
+        // Add columns to the TableView (e.g., Name, Ordering Provider, Date Ordered)
+        TableColumn<Appointment, String> nameColumn = new TableColumn<>("Name");
+        TableColumn<Appointment, String> orderingProviderColumn = new TableColumn<>("Ordering Provider");
+        TableColumn<Appointment, LocalDate> dateOrderedColumn = new TableColumn<>("Date Ordered");
+
+        // Set cell value factories for each column
+        // ...
+
+        // Add columns to the TableView
+        appointmentsTable.getColumns().addAll(nameColumn, orderingProviderColumn, dateOrderedColumn);
+
+        // Populate the TableView with data (replace this with your actual data)
+        ObservableList<Appointment> appointmentsData = FXCollections.observableArrayList(
+                new Appointment("John Doe", "Dr. Smith", LocalDate.of(2023, 1, 25)),
+                new Appointment("Jane Doe", "Dr. Johnson", LocalDate.of(2023, 2, 1))
+                // Add more data as needed
+        );
+        appointmentsTable.setItems(appointmentsData);
+
+        return appointmentsTable;
+    }*/
+
+
+}

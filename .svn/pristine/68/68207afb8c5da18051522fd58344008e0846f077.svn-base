@@ -1,0 +1,133 @@
+package com.autouploader;
+import javafx.geometry.Insets;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import java.io.*;
+public class HelpResult {
+    public void displayPatientResult(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+        VBox vBoxForMainHelp=new VBox(30);
+        VBox helpResultContentVBox = new VBox(15);
+        VBox VboxForContactUs=new VBox(15);
+        HBox hboxForContactUS=new HBox(70);
+        Label helpLabel = new Label("How can we help?");
+        helpLabel.setFont(Font.font("Arial", FontWeight.BOLD, 35));
+        helpLabel.setPadding(new Insets(30, 0, 0, 20));
+        // Image
+        Image faqImage = new Image("file:/C:/Auto_Uplaoder/help image.png");
+        ImageView imageView = new ImageView(faqImage);
+        imageView.setFitWidth(50);  // Set the width as per your requirement
+        imageView.setFitHeight(40); // Set the height as per your requirement
+        HBox hboxForImage=new HBox();
+        hboxForImage.getChildren().add(imageView);
+        hboxForImage.setPadding(new Insets(0,0,0,100));
+        //Image for contact
+        Image contactImage=new Image("file:/C:/Auto_Uplaoder/contact.png");
+        ImageView contactImageView=new ImageView(contactImage);
+
+        contactImageView.setFitWidth(50);
+        contactImageView.setFitHeight(40);
+        HBox hboxForContactImage=new HBox();
+        hboxForContactImage.getChildren().add(contactImageView);
+        hboxForContactImage.setPadding(new Insets(0,0,0,130));
+
+        // Label
+        Label infoLabel = new Label("FAQ");
+        infoLabel.setPadding(new Insets(0,0,0,100));
+        infoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 26));
+        //label for image
+        Label contactLabel=new Label("Contact Us");
+        contactLabel.setPadding(new Insets(0,0,0,100));
+
+        contactLabel.setFont(Font.font("Arial",FontWeight.BOLD,26));
+        // Paragraph
+        String paragraphText = "Your paragraph text goes here. Provide any relevant information.<br>In test when we are assigning or removing the site from eye care provider that time not happening in test but in local it is fixed.";
+        Text paragraph = new Text(paragraphText);
+        paragraph.setWrappingWidth(300); // Set the width as per your requirement
+      // Paragraph for ContactUs
+        Text contactUsText=new Text("Your paragraph text goes here. Provide any relevant information.<br>In test when we are assigning or removing the site from eye care provider that time not happening in test but in local it is fixed.");
+        contactUsText.setWrappingWidth(300);
+        // Hyperlink
+        Hyperlink helpHyperlink = new Hyperlink("Read FAQ >");
+        helpHyperlink.setPadding(new Insets(0,0,0,100));
+        helpHyperlink.setOnAction(event -> {
+            System.out.println("action started");
+            String textFromFile = readTextFromFile("file:/C:/Auto_Uplaoder/help.txt");
+            Text detailsText = new Text(textFromFile);
+            detailsText.setWrappingWidth(400);
+            fixedRectangleStackPane.getChildren().clear();
+            fixedRectangleStackPane.getChildren().add(detailsText);
+        });
+        // Hyperlink for contact us
+        Hyperlink contactUsHyperLink=new Hyperlink("Get Support >");
+        contactUsHyperLink.setPadding(new Insets(0,0,0,100));
+        contactUsHyperLink.setOnAction(event->{
+            String textFileForContactUs= null;
+            System.out.println(textFileForContactUs);
+            try {
+                textFileForContactUs = readTextFromFileForContactUs("file:/C:/Auto_Uplaoder/help-menu.txt");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            fixedRectangleStackPane.getChildren().clear();
+            Text textforcontactUs=new Text(textFileForContactUs);
+            textforcontactUs.setWrappingWidth(400);
+            fixedRectangleStackPane.getChildren().add(textforcontactUs);
+        });
+
+        // Add all elements to the VBox
+        helpResultContentVBox.getChildren().addAll( hboxForImage, infoLabel, paragraph, helpHyperlink);
+        VboxForContactUs.getChildren().addAll(hboxForContactImage,contactLabel,contactUsText,contactUsHyperLink);
+        // Clear and add the VBox to the fixedRectangleStackPane
+        fixedRectangleStackPane.getChildren().clear();
+        //fixedRectangleStackPane.getChildren().addAll(helpResultContentVBox,VboxForContactUs);
+        hboxForContactUS.getChildren().addAll(helpResultContentVBox,VboxForContactUs);
+       // hboxForContactUS.setPadding(new Insets(100));
+        hboxForContactUS.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,BorderStrokeStyle.SOLID,new CornerRadii(5),
+                new BorderWidths(.5))));
+        hboxForContactUS.setPrefWidth(900); // Set preferred width
+        hboxForContactUS.setPrefHeight(430); // Set preferred height
+        hboxForContactUS.setPadding(new Insets(100,0,0,40));
+        //setting margin above the vbox
+        VBox.setMargin(hboxForContactUS,new Insets(20));
+        vBoxForMainHelp.getChildren().addAll(helpLabel,hboxForContactUS);
+        fixedRectangleStackPane.getChildren().add(vBoxForMainHelp);
+        System.out.println(result);
+    }
+
+    private String readTextFromFileForContactUs(String filePath) throws IOException {
+        StringBuilder contentForContactUs=new StringBuilder();
+        BufferedReader contactUsTextReader=new BufferedReader(new FileReader(filePath));
+        String lineForParagraph;
+        while((lineForParagraph=contactUsTextReader.readLine())!=null)
+        {
+            contentForContactUs.append(lineForParagraph).append("\n");
+        }
+
+
+        return contentForContactUs.toString();
+    }
+
+    private String readTextFromFile(String filePath) {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            System.out.println("Absolute Path: " + new File(filePath).getAbsolutePath());
+            String line;
+            while ((line = br.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+            System.out.println("error message"+e.getMessage());
+        }
+        return content.toString();
+    }
+    }
+

@@ -1,0 +1,107 @@
+package com.autouploader;
+
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
+
+import java.util.Date;
+
+public class PatientsResult {
+
+
+    public void displayPatientResult(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+
+        VBox patientResultVBox=new VBox(20);
+        HBox labelAndImage=new HBox(12 );
+        Label label=new Label("Patients List");
+label.setFont(Font.font("Arial", FontWeight.BOLD,20));
+Image scrollingImage=new Image("file:/C:/Auto_Uplaoder/refresh.jpg");
+ImageView scrollingImageView=new ImageView(scrollingImage);
+scrollingImageView.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+scrollingImageView.setFitWidth(25);
+scrollingImageView.setFitHeight(25);
+labelAndImage.getChildren().addAll(label,scrollingImageView);
+
+
+      //  ImageView patientSearchImageView=new ImageView("file:/C:/Auto_Uplaoder/scrolling_image.png");
+        Button searchThisWeekButton=new Button(" This Week");
+        searchThisWeekButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+Button searchThisMonthButton=new Button("This Month");
+searchThisMonthButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+Button searchLast3MonthButton =new Button("Last 3 Month");
+searchLast3MonthButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+Button searchAllTimeButton=new Button("All time");
+
+searchAllTimeButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+HBox hbox=new HBox(10);
+hbox.setSpacing(12);
+        Image searchImageTextBox=new Image("file:/C:/Auto_Uplaoder/eyepacslogo.png.png");
+        ImageView searchImageView=new ImageView(searchImageTextBox);
+        searchImageView.setFitWidth(15);
+       // searchImageView.setFitHeight(12);
+TextField searchTextField =new TextField();
+searchTextField.setPromptText("Search");
+searchTextField.setPrefSize(300,20);
+hbox.getChildren().addAll(searchTextField, searchImageView);
+
+
+
+HBox patintsHeader=new HBox(30);
+patintsHeader.setPadding(new Insets(15,0,0,20));
+patintsHeader.getChildren().addAll(labelAndImage, searchThisWeekButton,searchThisMonthButton,searchLast3MonthButton,searchAllTimeButton,searchTextField);
+TableView<PatientTable> patientTableTableView=createPatientResult();
+patientTableTableView.setPadding(new Insets(0,0,0,15));
+patientResultVBox.getChildren().addAll(patintsHeader,patientTableTableView);
+fixedRectangleStackPane.getChildren().clear();
+fixedRectangleStackPane.getChildren().add(patientResultVBox);
+
+    }
+
+    public TableView<PatientTable> createPatientResult()
+    {
+        TableView<PatientTable> patientTableview=new TableView<>();
+        TableColumn<PatientTable,String> namePatientTable=new TableColumn<>("Name ");
+        TableColumn<PatientTable,Integer> caseIdColumn=new TableColumn<>("Case Id");
+        TableColumn<PatientTable,Integer> mrnColumn=new TableColumn<>("MRN");
+        TableColumn<PatientTable,String> uploadStatusColumn=new TableColumn<>("Upload Status ");
+        TableColumn<PatientTable,String> caseStatusColumn=new TableColumn<>("Case Status");
+        TableColumn<PatientTable, Date> dateTableColum=new TableColumn<>("Date Created");
+        TableColumn<PatientTable,String> uploadedBy=new TableColumn<>("Uploaded By");
+        // Set cell value factories
+        namePatientTable.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+        caseIdColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getCaseId()));
+        mrnColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getMrn()));
+        uploadStatusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUploadStatus()));
+        caseStatusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCaseStatus()));
+        dateTableColum.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getDateCreated()));
+        uploadedBy.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUploadedBy()));
+
+        patientTableview.getColumns().addAll(namePatientTable,caseIdColumn,mrnColumn,uploadStatusColumn,caseStatusColumn,dateTableColum,uploadedBy);
+        // Set the column resize policy to constrained
+
+
+        ObservableList<PatientTable> data1 = FXCollections.observableArrayList(new PatientTable("Dev",13233,233,"uploaded","reviewed",new Date(),"Raju"));
+        ObservableList<PatientTable> data2 = FXCollections.observableArrayList(new PatientTable("Dev",13233,233,"uploaded","reviewed",new Date(),"Raju"));
+        patientTableview.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        patientTableview.setItems(data1);
+        patientTableview.setItems(data2);
+
+        return patientTableview;
+    }
+
+
+}

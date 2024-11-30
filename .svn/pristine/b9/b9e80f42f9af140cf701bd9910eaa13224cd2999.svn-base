@@ -1,0 +1,6 @@
+#settings savings in property file
+#Tue Aug 27 09:36:01 IST 2024
+imagepath=C\:\\Users\\DevChandan\\Downloads\\testImages\\testImages
+selectedsite=Fortis
+selectedValueForImage=4
+state=true

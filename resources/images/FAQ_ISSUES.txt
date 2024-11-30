@@ -1,0 +1,86 @@
+ISSUES:
+
+Credential:
+Sicuro_admin
+Chandan123@@   ---site manager
+
+
+1. In test when we are assigning or removing the site from eye care provider that time not happening in test but in local it is fixed.  -----fixed
+
+
+2. Edit case details is not happening   ----- fixed
+
+
+3. When Login as Site adminstatior dashboard page is not coming getting internal server error ---fixed(functality is there)
+Cred using:Dev80@1234,Chandan123@@
+
+
+4.When login as Consultant and site adminstartor that time in eye care provider I am not able to add the site to particular Eye care prcatice or not able to assign or remove site.   --------fixed 
+(Issue was happening due to privelelage issue)
+  
+
+5. While browsing the patient that time when I select the that that different site is coming as to assigned user site.When login as consultant
+Cred: Dev79@1234,Chandan123@  ------solved
+
+6. When login as consultant that time that time different site is coming as the assigned site to particular user.   --------solved
+
+
+7. When Login as backupconultant at that time same is happeing    -----------solved
+ (For this licencure state should be same as the user is assigned to particular site)
+
+
+Dev83@1234,Chandan123@
+
+FOR ADVANCED SEARCH:
+
+1. When We login as photoghher trainee 
+Search based on user not happeing             --------- fixed
+dev74@1234,Chandan123@-- photogrher trainee
+
+Login as photogher certified
+dev75@1234,Chandan123@@
+Search based  on user not happing              --------- fixed
+
+Same for photogher not certified
+
+2. When we login as Refering provider           --------- fixed
+Dev79@1234,Chandan123@@
+
+->search based on user not happeing
+
+ 
+3. dev71@1234,Chandan123@  --primary consultant
+dev72@1234,Chandan123@ --superfised consultant
+dev73@1234,Chandan123@--backup consultant
+
+When Login as consultant
+That time same thing is happeing in advanced search.    --------- fixed(It was due to access previlage)
+
+4. When login as site adminstartor search based on user not happening  --------fixed
+(Internal server error is coming) 
+Cred using:Dev105@1234,Chandan123@@
+
+
+DOUBT:
+1. When login as site adminstartor that time in in site we are not getting anything   
+2.Edit case functionalty is not for site adminstaror  -------fixed(Functionality)
+3. Dashboard for site adminstrator.---------fixed(functionality)
+
+
+DEv101@1234,Chandan123@--consultant
+
+
+For eyecare provider:
+
+1.Login as site manager working fine
+2.Login as consultant and site administartor -site tree is not coming
+3.Login as refering provider is working fine in local but not in test
+4.
+
+
+--- While login as Qa consultant that time licencure is not required.
+
+
+Dev111@1234,Chandan123@@---primary consultant
+Dev112@1234,Chandan123@@--supervised consultant
+Dev113@1234,Chandan123@@--Backup consultant ---search, Dashbaord not opening (functionalty)

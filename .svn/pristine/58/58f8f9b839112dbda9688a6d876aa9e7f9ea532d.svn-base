@@ -1,0 +1,673 @@
+package com.autouploader;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+public class PersonalDetails {
+	public  VBox vboxforPregnancy;
+	private  TextField nameTextField;
+	private  ComboBox<String> genderComboBox;
+	private  TextField emailTextField;
+	private  Label nameErrorLabel;
+	private  TextField mrnTextField;
+	private  Label errorLabelEmail;
+	private  HBox skipBox;
+	private  HBox errorSkippingDob;
+	private  TextField yearTextField;
+	private  final String EMAIL_REGEX = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
+	private  TextField dateTextField;
+	private  TextField monthTextField;
+	private  Hyperlink dobSkipHyperLink=null;
+	private  Hyperlink mrnSkipLink=null;	
+	private  boolean mrnSkipped;
+	private  boolean dobSkipped;
+
+	public VBox getVboxforPregnancy() {
+		return vboxforPregnancy;
+	}
+
+	public void setVboxforPregnancy(VBox vboxforPregnancy) {
+		this.vboxforPregnancy = vboxforPregnancy;
+	}
+
+	public TextField getNameTextField() {
+		return nameTextField;
+	}
+
+	public void setNameTextField(TextField nameTextField) {
+		this.nameTextField = nameTextField;
+	}
+
+	public ComboBox<String> getGenderComboBox() {
+		return genderComboBox;
+	}
+
+	public void setGenderComboBox(ComboBox<String> genderComboBox) {
+		this.genderComboBox = genderComboBox;
+	}
+
+	public TextField getEmailTextField() {
+		return emailTextField;
+	}
+
+	public void setEmailTextField(TextField emailTextField) {
+		this.emailTextField = emailTextField;
+	}
+
+	public Label getNameErrorLabel() {
+		return nameErrorLabel;
+	}
+
+	public void setNameErrorLabel(Label nameErrorLabel) {
+		this.nameErrorLabel = nameErrorLabel;
+	}
+
+	public TextField getMrnTextField() {
+		return mrnTextField;
+	}
+
+	public void setMrnTextField(TextField mrnTextField) {
+		this.mrnTextField = mrnTextField;
+	}
+
+	public Label getErrorLabelEmail() {
+		return errorLabelEmail;
+	}
+
+	public void setErrorLabelEmail(Label errorLabelEmail) {
+		this.errorLabelEmail = errorLabelEmail;
+	}
+
+	public HBox getSkipBox() {
+		return skipBox;
+	}
+
+	public void setSkipBox(HBox skipBox) {
+		this.skipBox = skipBox;
+	}
+
+	public HBox getErrorSkippingDob() {
+		return errorSkippingDob;
+	}
+
+	public void setErrorSkippingDob(HBox errorSkippingDob) {
+		this.errorSkippingDob = errorSkippingDob;
+	}
+
+	public TextField getYearTextField() {
+		return yearTextField;
+	}
+
+	public void setYearTextField(TextField yearTextField) {
+		this.yearTextField = yearTextField;
+	}
+
+	public TextField getDateTextField() {
+		return dateTextField;
+	}
+
+	public void setDateTextField(TextField dateTextField) {
+		this.dateTextField = dateTextField;
+	}
+
+	public TextField getMonthTextField() {
+		return monthTextField;
+	}
+
+	public void setMonthTextField(TextField monthTextField) {
+		this.monthTextField = monthTextField;
+	}
+
+	public Hyperlink getDobSkipHyperLink() {
+		return dobSkipHyperLink;
+	}
+
+	public void setDobSkipHyperLink(Hyperlink dobSkipHyperLink) {
+		this.dobSkipHyperLink = dobSkipHyperLink;
+	}
+
+	public Hyperlink getMrnSkipLink() {
+		return mrnSkipLink;
+	}
+
+	public void setMrnSkipLink(Hyperlink mrnSkipLink) {
+		this.mrnSkipLink = mrnSkipLink;
+	}
+
+	public String getEMAIL_REGEX() {
+		return EMAIL_REGEX;
+	}
+
+	public  GridPane personalGridForUpload( String patientName, String medicalRecordNumber, String ethnicity, String phone, String email, String gender, String birthMonth, String birthDay, String birthYear) {
+		GridPane gridPane = new GridPane();
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
+		Label nameLabel = new Label("NAME"); // Label without asterisk
+//Add an asterisk in red color
+		Label asteriskLabel = new Label("*");
+		asteriskLabel.setStyle("-fx-text-fill: red;");
+		HBox nameHBox = new HBox(1);
+		nameHBox.getChildren().addAll(nameLabel, asteriskLabel);
+		nameHBox.setStyle("-fx-background-color:white;");
+		nameTextField = new TextField();
+		nameTextField.setPrefWidth(220);
+
+		nameTextField.setPromptText("Type Here");
+		// If the label is not null and has text, set the text in the text field
+//		if (label != null && label.getText() != null && !label.getText().isEmpty()) {
+//			nameTextField.setText(label.getText());
+//		} else {
+//			nameTextField.setText("");
+//		}
+		if(patientName!=null)
+		{
+			
+			nameTextField.setText(patientName);
+		}
+		else {
+			nameTextField.setText("");
+		}
+
+		nameErrorLabel = new Label("Please enter full name");
+		nameErrorLabel.setVisible(false);
+		nameErrorLabel.setManaged(false);
+		nameTextField.setStyle(
+				"-fx-background-color: white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		VBox vboxForNameTextFieldAndErrorLabel = new VBox();
+		vboxForNameTextFieldAndErrorLabel.getChildren().addAll(nameTextField, nameErrorLabel);
+		HBox hboxForNameAndTextBox = new HBox(5);
+		hboxForNameAndTextBox.getChildren().addAll(nameHBox, vboxForNameTextFieldAndErrorLabel);
+
+		gridPane.add(hboxForNameAndTextBox, 0, 0); // Use the HBox containing nameLabel and asteriskLabel
+		Label genderLabel = new Label("GENDER");
+		genderLabel.setPadding(new Insets(0, 10, 0, 0));
+		/// GENDER
+		HBox hboxforGenderLabelAndAstricksymbol = new HBox(1);
+		genderComboBox = new ComboBox<>();
+		genderComboBox.setStyle(
+				"-fx-background-color: white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		genderComboBox.setValue(gender);
+		genderComboBox.getItems().addAll("Select", "Male", "Female", "Others", "Unknown");
+		/// setting action for gender combobox
+		genderComboBox.setOnAction(e -> {
+
+			if (genderComboBox.getValue().equals("Female")) {
+				vboxforPregnancy=new VBox();
+				vboxforPregnancy.setVisible(true);
+			} else {
+				vboxforPregnancy.setVisible(false);
+			}
+
+		});
+		
+
+	//	clickComboBox(genderComboBox, "Select");
+
+		genderComboBox.setPrefWidth(240); // Adjust the width as needed
+		HBox hboxForGenderAndComboBox = new HBox(5);
+		hboxForGenderAndComboBox.getChildren().addAll(hboxforGenderLabelAndAstricksymbol, genderComboBox);
+		hboxforGenderLabelAndAstricksymbol.getChildren().addAll(genderLabel);
+		HBox hboxFormrnLabelandAstrick = new HBox();
+		Label asteriskLabel2 = new Label("*");
+		asteriskLabel2.setStyle("-fx-text-fill: red;");
+		/// MRN
+		Label mrnLabel = new Label("MRN");
+		hboxFormrnLabelandAstrick.getChildren().addAll(mrnLabel, asteriskLabel2);
+		hboxFormrnLabelandAstrick.setPadding(new Insets(0, 8, 0, 0));
+		mrnTextField = new TextField();
+		mrnTextField.setText(medicalRecordNumber);
+		mrnTextField.setPrefWidth(220);
+		mrnTextField.setPromptText("Type Here");
+		mrnTextField.setStyle(
+				"-fx-background-color: white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+
+		// Create the error label
+		Label mrnErrorLabel = new Label("Please enter MRN.");
+		mrnErrorLabel.setStyle(
+				"-fx-font-family: 'Arial';-fx-text-fill:red; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;");
+		// Create an HBox to hold the skip message
+		Label skipMessage = new Label("To skip,");
+		skipMessage.setStyle(
+				"-fx-font-family: 'Arial';-fx-text-fill:red; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;");
+		mrnSkipLink = new Hyperlink("click here");
+		mrnSkipLink.setStyle(
+				"-fx-font-family: 'Arial'; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;-fx-underline: true;");
+		skipBox = new HBox(mrnErrorLabel, skipMessage, mrnSkipLink);
+
+		VBox vboxForMrnTextFieldAndErrorLabel = new VBox();
+		vboxForMrnTextFieldAndErrorLabel.getChildren().addAll(mrnTextField, skipBox);
+		HBox hboxForMrnLabelAndTextBox = new HBox(5);
+		hboxForMrnLabelAndTextBox.getChildren().addAll(hboxFormrnLabelandAstrick, vboxForMrnTextFieldAndErrorLabel);
+		skipBox.setVisible(false);
+		skipBox.setManaged(false);
+		// Set alignment and padding
+		skipBox.setAlignment(Pos.CENTER_LEFT); // Aligns the nodes in the HBox
+		gridPane.add(hboxForMrnLabelAndTextBox, 0, 1);
+		HBox hboxForEthinicityandComboBox = new HBox(5);
+		Label ethinicityLabel = new Label("ETHINCITY");
+		ComboBox<String> ethinictyComboBox = new ComboBox<>();
+		ethinictyComboBox.setValue(ethnicity);
+		ethinictyComboBox.setStyle(
+				"-fx-background-color:white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		ethinictyComboBox.setValue("Not Specified");
+		ethinictyComboBox.setPrefWidth(240);
+		ethinictyComboBox.getItems().addAll("Not Specified", "African American/African Descent",
+				"Latin American/Hispanic", "Caucasian/White", "Asian/Pacific Islander", "Indian subcontinent origin",
+				"Native American/Alaskan Native", "Multi-racial", "Decline To State", "Other");
+		hboxForEthinicityandComboBox.getChildren().addAll(ethinicityLabel, ethinictyComboBox);
+		gridPane.add(hboxForEthinicityandComboBox, 1, 1);
+		gridPane.add(hboxForGenderAndComboBox, 1, 0);
+		ethinictyComboBox.setOnMouseClicked(e ->
+
+		{
+			if (ethinictyComboBox.getValue().equals("Not Specified")) {
+				ethinictyComboBox.setValue("");
+				ethinictyComboBox.show();
+			}
+		});
+		
+
+//	DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		Label dobLabel = new Label("DOB:");
+		dobLabel.setPadding(new Insets(0, 17, 0, 0));
+		dateTextField = new TextField();
+		dateTextField.setPromptText("day");
+		dateTextField.setPrefSize(70, 5);
+		dateTextField.setText(birthDay);
+		monthTextField = new TextField();
+		monthTextField.setPromptText("month");
+		monthTextField.setPrefSize(70, 5);
+		monthTextField.setText(birthMonth);
+//Create a Label for error messages
+		Label errorLabelForMonth = new Label("Invalid Month");
+		errorLabelForMonth.setStyle("-fx-font-family: 'Arial';-fx-text-fill:red; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;"); // Red text for error
+		errorLabelForMonth.setVisible(false);
+		errorLabelForMonth.setManaged(false);
+
+// Add real-time validation for monthTextField
+		monthTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+			if(!newValue)
+			{
+			String monthValueDob=monthTextField.getText();
+			if (!monthValueDob.isEmpty()) {
+				try {
+					int monthValue = Integer.parseInt(monthValueDob);
+					if (monthValue > 12 || monthValue < 1) {
+						// errorLabel.setText("Invalid Month");
+						errorLabelForMonth.setVisible(true);
+						errorLabelForMonth.setManaged(true);
+						// dayTextField.setDisable(true); // Disable day field
+
+						monthTextField.setStyle("-fx-border-color: red;-fx-border-radius: 3;");
+					} else {
+						errorLabelForMonth.setVisible(false);
+						errorLabelForMonth.setManaged(false);
+						// errorLabel.setText(""); // Clear error message
+						monthTextField.setStyle(null); // Reset style
+					}
+				} catch (NumberFormatException e) {
+					errorLabelForMonth.setVisible(true);
+					errorLabelForMonth.setManaged(true);
+					monthTextField.setStyle("-fx-border-color: red;-fx-border-radius: 3;");
+				}
+			}} else {
+				errorLabelForMonth.setVisible(false);
+				errorLabelForMonth.setManaged(false);
+				monthTextField.setStyle(null); // Reset style
+			}
+		});
+		VBox vbox1 = new VBox(); // Spacing between elements
+		vbox1.getChildren().addAll(monthTextField, errorLabelForMonth);
+		Label yearErrorLabel = new Label("Invalid Year");
+		yearErrorLabel.setStyle("-fx-font-family: 'Arial';-fx-text-fill:red; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;");
+		yearErrorLabel.setManaged(false);
+		yearErrorLabel.setVisible(false);
+		yearTextField = new TextField();
+		yearTextField.setText(birthYear);
+		  // Update the yearTextField with the full year
+      
+
+		 yearTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+		        if (!newValue) { // Focus lost, trigger validation
+		            String input = yearTextField.getText().trim();
+		            // If input is empty, clear any previous error styles and return without validation
+		            if (input.isEmpty()) {
+		                yearErrorLabel.setVisible(false);
+		                yearErrorLabel.setManaged(false);
+		                yearTextField.setStyle(null); // Clear any error styles
+		                return;
+		            }
+
+		            try {
+		                int year = Integer.parseInt(input);
+		                
+		                // Hide error label initially
+		                yearErrorLabel.setVisible(false);
+		                yearErrorLabel.setManaged(false);
+		                yearTextField.setStyle(null); // Clear error styles
+
+		                // If the input is a four-digit year, check if it's valid
+		                if (input.length() == 4) {
+		                    if (year < 1900) {
+		                        yearErrorLabel.setVisible(true);
+		                        yearErrorLabel.setManaged(true);
+		                        yearTextField.setStyle("-fx-border-color: red;");
+		                        return;
+		                    }
+		                }
+
+		                // If the input is a two-digit year, adjust based on the conditions
+		                if (input.length() == 2) {
+		                    int currentYear = java.time.Year.now().getValue();
+		                    int currentCentury = currentYear / 100 * 100;
+		                    int inputYear = Integer.parseInt(input);
+
+		                    // If less than 24, assume it's part of the current century
+		                    if (inputYear <= 24) {
+		                        year = currentCentury + inputYear;
+		                    } else {
+		                        // If greater than 24, assume it's from the previous century
+		                        year = (currentCentury - 100) + inputYear;
+		                    }
+
+		                    // Ensure the corrected year is not less than 1900
+		                    if (year < 1900) {
+		                        // Show error
+		                        yearErrorLabel.setText("Invlid Year");
+		                        yearErrorLabel.setVisible(true);
+		                        yearErrorLabel.setManaged(true);
+		                        yearTextField.setStyle("-fx-border-color: red; -fx-border-radius:3;");
+		                        return;
+		                    }
+
+		                    // Set the corrected year back to the text field
+		                    yearTextField.setText(String.valueOf(year));
+		                }
+		            } catch (NumberFormatException e) {
+		                // Handle non-numeric input
+		  
+		                yearErrorLabel.setVisible(true);
+		                yearErrorLabel.setManaged(true);
+		                yearTextField.setStyle("-fx-border-color: red;");
+		            }
+		        }
+		    });
+
+		Label dayLabel = new Label("Invalid Day");
+		dayLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-style: italic;-fx-text-fill:red; -fx-font-size: 10; -fx-font-weight: bold;");
+		dayLabel.setManaged(false);
+		dayLabel.setVisible(false);
+//// Add real-time validation for dayTextField
+		dateTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue) {
+
+				String inputValue = dateTextField.getText();
+				if (!inputValue.isEmpty()) {
+					try {
+						int dayValue = Integer.parseInt(inputValue);
+						if (dayValue > 31 || dayValue < 1) {
+							dayLabel.setManaged(true);
+							dayLabel.setVisible(true);
+							dateTextField.setStyle("-fx-border-color: red;-fx-border-radius: 3;");
+						} else {
+							dayLabel.setManaged(false);
+							dayLabel.setVisible(false);
+							dateTextField.setStyle(null);
+						}
+					} catch (NumberFormatException e) {
+						dayLabel.setManaged(true);
+						dayLabel.setVisible(true);
+						dateTextField.setStyle("-fx-border-color: red;-fx-border-radius: 3;");
+
+					}
+				}
+			} else {
+				dayLabel.setManaged(false);
+				dayLabel.setVisible(false);
+				dateTextField.setStyle(null);
+			}
+		});
+		VBox yearVbox = new VBox();
+		yearVbox.getChildren().addAll(yearTextField, yearErrorLabel);
+		VBox dateVBox = new VBox();
+		dateVBox.getChildren().addAll(dateTextField, dayLabel);
+		yearTextField.setPromptText("year");
+		yearTextField.setPrefSize(70, 5);
+		HBox hboxForDob = new HBox(5);
+		hboxForDob.getChildren().addAll(vbox1, dateVBox, yearVbox);
+		Label dobErrorLabel = new Label("Please enter DOB.");
+		dobErrorLabel.setStyle(
+				"-fx-font-family: 'Arial'; -fx-font-style: italic;-fx-text-fill:red; -fx-font-size: 10; -fx-font-weight: bold;");
+		errorSkippingDob = new HBox();
+		Label skipLabelDob = new Label("To skip,");
+		skipLabelDob.setStyle(
+				"-fx-font-family: 'Arial'; -fx-font-style: italic;-fx-text-fill:red; -fx-font-size: 10; -fx-font-weight: bold;");
+		dobSkipHyperLink = new Hyperlink("click here");
+		dobSkipHyperLink.setStyle(
+				"-fx-font-family: 'Arial'; -fx-font-style: italic;-fx-font-size: 10; -fx-font-weight: bold;-fx-underline: true;");
+		errorSkippingDob.getChildren().addAll(dobErrorLabel, skipLabelDob, dobSkipHyperLink);
+		errorSkippingDob.setVisible(false);
+		errorSkippingDob.setManaged(false);
+		VBox dobVBox = new VBox();
+		dobVBox.getChildren().addAll(hboxForDob, errorSkippingDob);
+		errorSkippingDob.setSpacing(5);
+		HBox hboxContainingLabelAnddobVbox = new HBox();
+		hboxContainingLabelAnddobVbox.getChildren().addAll(dobLabel, dobVBox);
+		gridPane.add(hboxContainingLabelAnddobVbox, 0, 2);
+		Label contactLabel = new Label("Contact No");
+		TextField contactTextField = new TextField();
+		contactTextField.setText(phone);
+		contactTextField.setPrefWidth(240);
+		dateTextField.setOnMouseClicked(event -> {
+		    // Make dateTextField invisible when clicked
+			 errorSkippingDob.setVisible(false);
+		        errorSkippingDob.setManaged(false);
+		    
+		});
+		monthTextField.setOnMouseClicked(e->
+		{
+			 errorSkippingDob.setVisible(false);
+		        errorSkippingDob.setManaged(false);
+			
+		});
+		yearTextField.setOnMouseClicked(e->
+		{
+			errorSkippingDob.setVisible(false);
+	        errorSkippingDob.setManaged(false);
+		});
+		contactTextField.setStyle(
+				"-fx-background-color:white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		HBox hboxFoContactField = new HBox(4);
+		hboxFoContactField.getChildren().addAll(contactLabel, contactTextField);
+		gridPane.add(hboxFoContactField, 1, 2);
+		Label emailLabel = new Label("Email");
+		emailLabel.setPadding(new Insets(0, 15, 0, 0));
+		emailTextField = new TextField();
+		emailTextField.setPromptText("enter email");
+		emailTextField.setPrefWidth(220);
+		emailTextField.setStyle(
+				"-fx-background-color:white; -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		errorLabelEmail = new Label("Invalid Email");
+		errorLabelEmail.setVisible(false);
+		errorLabelEmail.setManaged(false);
+		VBox vboxForEmailTextFieldAndErrorLabel = new VBox();
+		vboxForEmailTextFieldAndErrorLabel.getChildren().addAll(emailTextField, errorLabelEmail);
+		HBox hboxContainingEmailLabelAndHbox = new HBox();
+		hboxContainingEmailLabelAndHbox.getChildren().addAll(emailLabel, vboxForEmailTextFieldAndErrorLabel);
+		CheckBox declineDataSharingCheckBox = new CheckBox(
+				"Patient declines to share de-identified\ndata for research and development");
+		declineDataSharingCheckBox.setPadding(new Insets(0, 0, 0, 70));
+		gridPane.add(hboxContainingEmailLabelAndHbox, 0, 3);
+		gridPane.add(declineDataSharingCheckBox, 1, 3);
+
+		return gridPane;
+	}
+public  boolean validateFormFields() {
+		boolean isValid = true;
+		System.out.println(nameTextField);
+		System.out.println(mrnTextField);
+	    
+
+		///// validation for name text field
+	    // Define regex patterns for valid name formats
+	   String validPattern = "^(?:[A-Za-z0-9]+(?: [A-Za-z0-9]+)+|[A-Za-z0-9]+(?:,[ ]?[A-Za-z0-9]+)+)$";
+		
+	   
+
+
+	    if (nameTextField != null) {
+	        String text = nameTextField.getText().trim();
+	        if (text.isEmpty() || !text.matches(validPattern)) {
+	            nameErrorLabel.setVisible(true);
+	            nameErrorLabel.setManaged(true);
+	            nameTextField.setStyle("-fx-border-color: red; -fx-border-radius: 3;");
+	            nameErrorLabel.setStyle(
+	                    "-fx-font-family: 'Arial';-fx-text-fill:red; -fx-font-style: italic; -fx-font-size: 10; -fx-font-weight: bold;");
+	            // Indicate invalid state
+	            isValid = false;
+	        } else {
+	            // Clear error style if valid
+	            nameTextField.setStyle(null);
+	            nameErrorLabel.setVisible(false);
+	            nameErrorLabel.setManaged(false);
+	        }
+	    }
+
+
+		// Action for MRN skip link
+		mrnSkipLink.setOnAction(e -> {
+		    mrnSkipped = true;  // Skip MRN validation
+		    dobSkipped = true;  // Skip DOB validation
+			
+		    skipBox.setVisible(false);
+		    skipBox.setManaged(false);
+		    errorSkippingDob.setVisible(false);
+		    errorSkippingDob.setManaged(false);
+		    mrnTextField.setStyle(null);  // Clear error style
+		});
+
+		// Action for DOB skip link
+		dobSkipHyperLink.setOnAction(e -> {
+		    dobSkipped = true;  // Skip DOB validation
+		    mrnSkipped = true;  // Skip MRN validation
+		    errorSkippingDob.setVisible(false);
+		    errorSkippingDob.setManaged(false);
+		    skipBox.setVisible(false);
+		    skipBox.setManaged(false);
+		    dateTextField.setText("");
+		    monthTextField.setText("");
+		    yearTextField.setText("");
+		});
+		
+		/// listerner for name
+		nameTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.isEmpty()) {
+				// Hide the skipBox and remove the red border when the user starts typing
+				if (nameErrorLabel != null) {
+					nameErrorLabel.setVisible(false);
+				}
+				nameTextField.setStyle(null); // Clear error style
+			} else {
+				// If the field is cleared again, show the skipBox and the red border
+				if (nameErrorLabel != null) {
+					// skipBox.setVisible(true);
+				}
+				nameTextField.setStyle(null);
+			}
+		});
+		
+
+		mrnTextField.setOnMouseClicked(e->
+		{
+			skipBox.setVisible(false);
+			skipBox.setManaged(false);
+		});
+
+	
+		  // Validate MRN only if it's not skipped
+	    if (!mrnSkipped) {
+	        if (mrnTextField != null && mrnTextField.getText().isEmpty()) {
+	            skipBox.setVisible(true);
+	            skipBox.setManaged(true);
+	          //  mrnTextField1.setStyle("-fx-border-color: black; -fx-border-radius: 3;");
+	            isValid = false;
+	        } else {
+	            mrnTextField.setStyle(null);
+	        }
+	    } else {
+	        // Ensure skipBox remains invisible when MRN is skipped
+	        skipBox.setVisible(false);
+	        skipBox.setManaged(false);
+	    }
+
+	    // Validate DOB only if it's not skipped and validateDOB() method return false
+	    if (!dobSkipped) {
+	        if (!validateDOB()) {
+	            isValid = false;
+	        }
+	    } else {
+	        // Ensure errorSkippingDob remains invisible when DOB is skipped
+	        errorSkippingDob.setVisible(false);
+	        errorSkippingDob.setManaged(false);
+	    }
+	    // validating email
+	    String emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+	    String email = emailTextField.getText().trim();
+	 // Check if email matches the pattern
+	 // Check if email matches the pattern
+	    if (!email.isEmpty() && !email.matches(emailPattern)) {
+	        // Show error label for invalid email
+	        errorLabelEmail.setText("Invalid Email");
+	        errorLabelEmail.setVisible(true);
+	        errorLabelEmail.setManaged(true);
+
+	        // Apply styling to error label and text field
+	        emailTextField.setStyle("-fx-border-color: red; -fx-border-radius: 3;");
+	        errorLabelEmail.setStyle(
+	            "-fx-font-family: 'Arial';" +
+	            "-fx-text-fill: red;" +
+	            "-fx-font-style: italic;" +
+	            "-fx-font-size: 10;" +
+	            "-fx-font-weight: bold;"
+	        );
+
+	        isValid = false;
+	    } else {
+	        // Clear error state if email is valid or field is empty
+	        errorLabelEmail.setVisible(false);
+	        errorLabelEmail.setManaged(false);
+	        emailTextField.setStyle(null); // Clear any previous error styling
+	    }
+	    
+		return isValid;
+	}
+//Helper method for DOB validation
+	private  boolean validateDOB() {
+	    String day = dateTextField.getText();
+	    String month = monthTextField.getText();
+	    String year = yearTextField.getText();
+
+	    boolean isDobValid = !day.isEmpty() && !month.isEmpty() && !year.isEmpty();
+
+	    if (!isDobValid) {
+	        errorSkippingDob.setVisible(true);
+	        errorSkippingDob.setManaged(true);
+	        return false;
+	    } else {
+	        errorSkippingDob.setVisible(false);
+	        errorSkippingDob.setManaged(false);
+	        return true;
+	    }
+	}
+	
+
+
+}

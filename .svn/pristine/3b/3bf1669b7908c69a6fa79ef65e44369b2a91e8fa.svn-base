@@ -1,0 +1,137 @@
+package com.autouploader;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import javafx.geometry.Insets;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
+
+public class Utilty {
+	/**
+	 * method for addin rthe overlay when dialog appears
+	 * @param root
+	 * @param width
+	 * @param height
+	 */
+    public static void addOverlay(StackPane root, double width, double height) {
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
+        overlay.setPrefSize(width, height);
+        root.getChildren().add(overlay);
+    }
+/**
+ * method for removing the overlay color when dialog diappears
+ * @param root
+ * @param overlay
+ */
+    public static void removeOverlay(StackPane root, Parent overlay) {
+        root.getChildren().remove(overlay);
+    }
+    /*
+     * method for creating the crating the orangestackpane
+     */
+    public static  StackPane addPatientCalled(Button btn,Stage stage)
+    {
+    	// Create a colored circle for the background of the "+"
+    			Circle plusCircle = new Circle(15, Color.ORANGE);
+    			Label addPatientPlusSymbol = new Label("+");
+    			btn.setGraphic(addPatientPlusSymbol);
+    			btn.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+    			addPatientPlusSymbol.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+    			StackPane plusStackPane = new StackPane(plusCircle,  btn);
+    			//plusStackPane.setPadding(new Insets(200, 0, 0, 100));
+    			
+    		btn.setOnAction(e->
+    			{
+    				AddNewPatient addNewPatient=new AddNewPatient();
+    				try {
+						addNewPatient.handleAddPatient(stage);
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+    			}
+    			);
+    		return plusStackPane;
+    }
+    /***
+     * method for loading the property file
+     * @param property
+     * @param key
+     * @return
+     */
+	public static  String loadSelectedValue(Properties property,String key) {
+		ensurePropertiesFileExists();
+
+		System.out.println("load selected path value called");
+	
+		try {
+			FileInputStream input = new FileInputStream("settings.properties");
+			System.out.println(input);
+			if (input != null) {
+				property.load(input);
+			}
+			System.out.println("load method called");
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return property.getProperty(key, null);
+
+	}
+	/***
+	 * method  for saving the key value to property file
+	 * @param property -property object
+	 * @param value -- key
+	 */
+	public static  void settingSaving(Properties property,String value,String changedValue) {
+		ensurePropertiesFileExists();
+		// TODO Auto-generated method stub
+	
+		System.out.println("save setting method called");
+		property.setProperty(changedValue, value);
+		try (FileOutputStream output = new FileOutputStream("settings.properties")) {
+			property.store(output, null);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+
+		}
+		
+		
+		
+	}
+	
+	/**
+	 * method for checking the  settings file is there or not if not than craete it
+	 */
+	public static  void ensurePropertiesFileExists() {
+		// TODO Auto-generated method stub
+		System.out.println("craetring the setting fikle");
+		File propertiesFile = new File("settings.properties");
+		if (!propertiesFile.exists()) {
+			try {
+				System.out.println("file will be craeted");
+				propertiesFile.createNewFile();
+				System.out.println("system file is created");
+				System.out.println("Properties file created at: " + propertiesFile.getAbsolutePath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+    
+}

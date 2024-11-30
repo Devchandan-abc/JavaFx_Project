@@ -1,0 +1,12 @@
+package com.autouploader;
+
+import java.util.Date;
+
+public class Appointment {
+    private String name;
+    private String orderingProvider;
+
+    private Date orderedDate;
+
+    
+}

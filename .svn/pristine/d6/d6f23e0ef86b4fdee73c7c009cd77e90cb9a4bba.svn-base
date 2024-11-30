@@ -1,0 +1,314 @@
+package com.autouploader;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+
+public class Login extends Application {
+	private ComboBox<String> siteComboBox;
+//private SearchableComboBox<T> siteComboBox;
+	private Button submitButton;
+	private VBox root;
+	private Button loginButton;
+	private Hyperlink forgetPasswordLink;
+	private TextField userNameField;
+	private PasswordField passwordField;
+	public Properties propertyForSiteComboBox = new Properties();
+	private VBox vboxForSiteAndlabel;
+	private HBox hboxForsubmitAndLogin;
+	private HBox usernameHBox;
+	private HBox passwordHBox;
+	private ImageView eyepacslogo;
+	private final String defaultValue = "--Select site--";
+
+	public static void main(String[] args) {
+		launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		// Create a StackPane to enclose the content
+		StackPane stackPane = new StackPane();
+		// Create a Rectangle as the background
+		Rectangle background = new Rectangle(400, 400); // Set your desired dimensions
+		background.setFill(Color.WHITE);
+		root = new VBox(22);
+		eyepacslogo = new ImageView(new Image(new FileInputStream("resources/images/eyepacslogo.png.png")));
+		eyepacslogo.setFitWidth(140);
+		eyepacslogo.setFitHeight(50);
+
+		// Create the username field with icon
+		usernameHBox = new HBox(12);
+		usernameHBox.setPadding(new Insets(0, 0, 0, 505));
+		ImageView userIcon = new ImageView(new Image(new FileInputStream("resources/images/user.png.png")));
+		userIcon.setFitHeight(20);
+		userIcon.setFitWidth(20);
+		userNameField = new TextField();
+		userNameField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		userNameField.setPromptText("Username");
+		ObservableList<Node> children = usernameHBox.getChildren();
+		children.addAll(userIcon, userNameField);
+		// Create the password field with icon
+		passwordHBox = new HBox(10);
+		passwordHBox.setPadding(new Insets(0, 0, 0, 505));
+
+		ImageView passwordIcon = new ImageView(new Image(new FileInputStream("resources/images/pass-icon.png.jpg")));
+		passwordIcon.setFitWidth(20); // Set your desired width
+		passwordIcon.setFitHeight(20); // Set your desired height
+		passwordField = new PasswordField();
+		passwordField.setPromptText("Password");
+		passwordField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		loginButton = new Button("Submit");
+		Button cancelButton = new Button("Cancel");
+
+		loginButton.setPrefSize(120, 25);
+		cancelButton.setPrefSize(70, 25);
+		HBox loginHbox = new HBox(3);
+		loginHbox.getChildren().addAll(loginButton, cancelButton);
+
+		loginButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;"); // Orange color
+		forgetPasswordLink = new Hyperlink("Forgot your password ?");
+		forgetPasswordLink.setStyle("-fx-underline: true;");
+		passwordHBox.getChildren().addAll(passwordIcon, passwordField, forgetPasswordLink);
+		stackPane.getChildren().addAll(background, root); // Add the Rectangle and VBox to the StackPane
+
+		root.getChildren().addAll(eyepacslogo, usernameHBox, passwordHBox, loginButton, forgetPasswordLink);
+		// positionling on top from the vertical and horizom
+		root.setAlignment(Pos.CENTER);
+
+		loginButton.setOnAction(event -> {
+			try {
+				handleLogin(userNameField.getText(), passwordField.getText(), primaryStage);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+
+		// Get the screen bounds
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+		// Calculate the width and height as 90% of the screen size
+		double width = screenBounds.getWidth() * 0.99;
+		double height = screenBounds.getHeight() * 0.99;
+		// Set up the scene
+		Scene scene = new Scene(stackPane, width, height);
+		primaryStage.setScene(scene);
+		primaryStage.show();// show the stage
+
+	}
+
+	/***
+	 * 
+	 * @param s1
+	 * @param userPassword
+	 * @param primaryStage
+	 * @throws IOException handling the login and creating the site section
+	 */
+	public void handleLogin(String s1, String userPassword, Stage primaryStage) throws IOException {
+		if (("Dev Kumar".equalsIgnoreCase(s1) && ("123".equals(userPassword)))
+				|| ("Krishna Kumar".equalsIgnoreCase(s1) && ("123".equals(userPassword)))) {
+			// Disable username and password fields
+			userNameField.setEditable(false);
+			passwordField.setEditable(false);
+
+			root.getChildren().removeAll(loginButton, forgetPasswordLink);
+
+			VBox vbox = createSiteSection(primaryStage, s1);
+			root.getChildren().add(vbox);
+
+		} else {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Login Error");
+			alert.setHeaderText(null);
+			alert.setContentText("Invalid username or password");
+			alert.showAndWait();
+		}
+
+	}
+
+	/**
+	 * 
+	 * @param stage
+	 * @param s1
+	 * @return vbox
+	 * 
+	 *         creating the site section if user enter the correct credentials
+	 */
+	private VBox createSiteSection(Stage stage, String s1) {
+		VBox vboxForsiteAndButton = new VBox(10);
+		vboxForSiteAndlabel = new VBox(10);
+
+		vboxForSiteAndlabel.setAlignment(Pos.CENTER);
+
+		// Original list of items
+		ObservableList<String> items = FXCollections.observableArrayList("--Select site--", "site1", "site2", "site3",
+				"site4", "site5", "site6", "site7", "site8", "Clinic karnatka", "clinic devbisnalli", "devnagri");
+
+		siteComboBox = new ComboBox<>(items);
+		
+		siteComboBox.setValue(defaultValue);
+		siteComboBox.setEditable(true); // Set editable to allow text input
+
+		vboxForSiteAndlabel.getChildren().add(siteComboBox);
+
+		TextField editor = siteComboBox.getEditor();
+
+		editor.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+			String input = editor.getText();
+			int caretPosition = editor.getCaretPosition(); // Save the caret position
+
+			if (input.isEmpty()) {
+				siteComboBox.setItems(items);
+			} else {
+				ObservableList<String> filteredItems = FXCollections.observableArrayList();
+				for (String item : items) {
+					if (item.toLowerCase().contains(input.toLowerCase())) {
+						filteredItems.add(item);
+					}
+				}
+				siteComboBox.setItems(filteredItems);
+				siteComboBox.show();
+			}
+
+			editor.setText(input); // Reset the text
+			editor.positionCaret(caretPosition); // Restore the caret position
+			adjustComboBoxHeight(siteComboBox);
+		});
+
+		// Update TextField when ComboBox selection changes
+		siteComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				editor.setText(newValue);
+				editor.positionCaret(newValue.length()); // Move the caret to the end
+			}
+		});
+
+		// Show ComboBox dropdown when TextField is clicked
+		editor.setOnMouseClicked(event ->
+		{
+		if (siteComboBox.getValue().equals(defaultValue)) {
+            // Remove default value from editor
+            editor.setText("");
+            siteComboBox.show();
+        
+		}
+		 // siteComboBox.setItems(items); // Ensure the full list is displayed
+        //  siteComboBox.show();
+		});
+		
+
+		
+
+		siteComboBox.setOnAction(e -> {
+
+			Utilty.settingSaving(propertyForSiteComboBox, siteComboBox.getValue(), "selectedsite");
+
+		});
+
+		submitButton = new Button("Login");
+		submitButton.setPrefSize(120, 25);
+		Button cancelButton = new Button("Cancel");
+		cancelButton.setPrefSize(120, 25);
+		cancelButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+		submitButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+
+		hboxForsubmitAndLogin = new HBox(4);
+		hboxForsubmitAndLogin.getChildren().addAll(submitButton, cancelButton);
+		hboxForsubmitAndLogin.setAlignment(Pos.CENTER);
+// root.getChildren().addAll(siteLabel,siteComboBox,submitButton);   
+		vboxForsiteAndButton.getChildren().addAll(vboxForSiteAndlabel, hboxForsubmitAndLogin);
+		vboxForsiteAndButton.setSpacing(30);
+		vboxForsiteAndButton.setAlignment(Pos.CENTER);
+
+		/**
+		 * setting action for submit button
+		 */
+		submitButton.setOnAction(e -> {
+			try {
+				handleSubmit(stage, s1);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		});
+		cancelButton.setOnAction(e -> {
+
+			resetLoginForm();
+
+		});
+
+		return vboxForsiteAndButton;
+	}
+
+	/**
+	 * 
+	 * @param stage
+	 * @param username
+	 * @throws IOException handling the submit if credential are correct
+	 */
+	private void handleSubmit(Stage stage, String username) throws IOException {
+		// Check if the user has selected a site
+	    String selectedSite = siteComboBox.getValue();
+	    if (selectedSite.equals(defaultValue)|| !siteComboBox.getItems().contains(selectedSite)) {
+	        // Show an error alert if no site is selected
+	        Alert alert = new Alert(Alert.AlertType.ERROR);
+	        alert.setTitle("Site Selection Error");
+	        alert.setContentText("Please select a site before proceeding.");
+	        alert.showAndWait();
+	        return; // Prevent further action
+	    }
+
+		// Create a new Stage for the dashboard
+		Stage dashboardStage = new Stage();
+		// Create the dashboard instance
+		Dashboard dashboard = new Dashboard();
+		System.out.println(dashboard);
+		// Open the dashboard with the new Stage
+		dashboard.OpenDashBoard(dashboardStage, username);
+
+		// Close the login stage
+		stage.close();
+
+	}
+	 private void adjustComboBoxHeight(ComboBox<String> comboBox) {
+	        // Calculate and set the height of the popup to ensure all items are visible without scrolling
+	        comboBox.setVisibleRowCount(Math.min(comboBox.getItems().size(), 10)); // Adjust the number 10 as needed
+	    }
+
+	private void resetLoginForm() {
+
+		root.getChildren().clear();
+
+		userNameField.setEditable(true);
+		passwordField.setEditable(true);
+		root.getChildren().addAll(eyepacslogo, usernameHBox, passwordHBox, loginButton, forgetPasswordLink);
+	}
+
+}

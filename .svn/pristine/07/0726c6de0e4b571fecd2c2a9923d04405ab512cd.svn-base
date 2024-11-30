@@ -1,0 +1,18 @@
+OPERATING MODES:
+
+1. Standalone Server:(Development,Testing etc)
+The standalone server operating mode represents running Jboss as single server instance.
+2. Managed Domain:(Production-High Availablity Architecture)
+The managed Domain operating mode allows for the management of multiple JBoss instances from a single control point.
+
+* WildFly includes a variety of features related to application deployment, management, and configuration. It's often used to host Java-based applications, including web applications, microservices, and more. Some of its key features related to deployment and management include:
+
+* Hot Deployment: WildFly allows you to deploy applications without stopping the server, making it convenient for development and testing.
+
+* Management Console: It provides a web-based administration console (WildFly Admin Console) for managing applications, resources, and server configurations.
+
+* CLI (Command Line Interface): WildFly offers a command-line tool for managing and configuring the server and applications.
+
+* Domain Mode: You can manage multiple WildFly instances in a domain, which simplifies the management of clustered and distributed applications.
+
+* Automatic Dependency Resolution: WildFly can automatically resolve and deploy dependencies for your applications, making it easier to manage complex application deployments.

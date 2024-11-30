@@ -1,0 +1,1393 @@
+package com.autouploader;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.Properties;
+import javafx.geometry.Insets;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+public class Utilty {
+	private static TextField diabaticTypeTextfield;
+	private static VBox insulinVBox;
+	public static VBox diabaticTypeVBox;
+	public static VBox vboxforPregnancy;
+	private static GridPane diabeticGridPane;
+	private static VBox vboxMed;
+
+	
+	/**
+	 * method for addin rthe overlay when dialog appears
+	 * 
+	 * @param root
+	 * @param width
+	 * @param height
+	 */
+	public static void addOverlay(StackPane root, double width, double height) {
+		StackPane overlay = new StackPane();
+		overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
+		overlay.setPrefSize(width, height);
+		root.getChildren().add(overlay);
+	}
+
+	/**
+	 * method for removing the overlay color when dialog diappears
+	 * 
+	 * @param root
+	 * @param overlay
+	 */
+	public static void removeOverlay(StackPane root, Parent overlay) {
+		root.getChildren().remove(overlay);
+	}
+
+	/*
+	 * method for creating the crating the orangestackpane
+	 */
+	public static StackPane addPatientCalled(Button btn, Stage stage) {
+		// Create a colored circle for the background of the "+"
+		Circle plusCircle = new Circle(15, Color.ORANGE);
+		Label addPatientPlusSymbol = new Label("+");
+		btn.setGraphic(addPatientPlusSymbol);
+		btn.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		addPatientPlusSymbol.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+		StackPane plusStackPane = new StackPane(plusCircle, btn);
+		// plusStackPane.setPadding(new Insets(200, 0, 0, 100));
+
+		btn.setOnAction(e -> {
+			AddNewPatient addNewPatient = new AddNewPatient();
+			try {
+				addNewPatient.handleAddPatient(stage);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+		return plusStackPane;
+	}
+
+	/***
+	 * method for loading the property file
+	 * 
+	 * @param property
+	 * @param key
+	 * @return
+	 */
+	public static String loadSelectedValue(Properties property, String key) {
+		ensurePropertiesFileExists();
+
+		System.out.println("load selected path value called");
+
+		try {
+			FileInputStream input = new FileInputStream("settings.properties");
+			System.out.println(input);
+			if (input != null) {
+				property.load(input);
+			}
+			System.out.println("load method called");
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return property.getProperty(key, null);
+
+	}
+
+	/***
+	 * method for saving the key value to property file
+	 * 
+	 * @param property -property object
+	 * @param value    -- key
+	 */
+//	public static void settingSaving(Properties property, String value, String changedValue) {
+//		ensurePropertiesFileExists();
+//		// TODO Auto-generated method stub
+//
+//		System.out.println("save setting method called");
+//		property.setProperty(changedValue, value);
+//		try (FileOutputStream output = new FileOutputStream("settings.properties")) {
+//			property.store(output, null);
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//
+//		}
+//
+//	}
+	
+	/***
+	 * To preserve the existing properties, you should first load the existing properties from the file, add the new key-value pair, and then save all the properties back to the file. Here's how you can modify your 
+	 * @param property
+	 * @param value
+	 * @param changedValue
+	 */
+	public static void settingSaving(Properties property, String value, String changedValue) {
+	    ensurePropertiesFileExists();
+
+	    System.out.println("Save setting method called");
+
+	    // Load existing properties from the file
+	    try (FileInputStream input = new FileInputStream("settings.properties")) {
+	        property.load(input);
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+
+	    // Set the new property
+	    property.setProperty(changedValue, value);
+
+	    // Save the updated properties back to the file
+	    try (FileOutputStream output = new FileOutputStream("settings.properties")) {
+	    	/*
+	    	 * The property.store(output, null); line saves all the properties in the Properties object to the specified file, overwriting the existing content of the file. The null parameter indicates that no additional comment should be included at the top of the file.
+
+	    	 */
+	        property.store(output, "settings savings in property file");
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+
+	/**
+	 * method for checking the settings file is there or not if not than craete it
+	 */
+	public static void ensurePropertiesFileExists() {
+		// TODO Auto-generated method stub
+		System.out.println("craetring the setting fikle");
+		File propertiesFile = new File("settings.properties");
+		if (!propertiesFile.exists()) {
+			try {
+				System.out.println("file will be craeted");
+				propertiesFile.createNewFile();
+				System.out.println("system file is created");
+				System.out.println("Properties file created at: " + propertiesFile.getAbsolutePath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+
+	public static VBox medicalRecordGRidPane() {
+		vboxMed=new VBox(5);
+        
+		
+		// diabeticGridPane=new GridPane();
+	//	GridPane diabeticGrid=new GridPane();
+		
+		GridPane medicalrecordGridPane = new GridPane();
+		medicalrecordGridPane.setHgap(3);
+		medicalrecordGridPane.setVgap(3);
+		/// pupil dilation
+
+//		VBox vboxForPupilDilation = new VBox();
+//		Text redAsterisk = new Text("*");
+//		redAsterisk.setFill(Color.RED);
+//
+//		// Combine the Text node and the rest of the label text
+//		String pupilDilationStringLabel = "Pupil Dilation";
+//		Label pupilDilationLabel = new Label(pupilDilationStringLabel + " ");
+//		// text will be set as the graphic to the label
+//		pupilDilationLabel.setGraphic(redAsterisk);
+//		// the astrick trext will be put right to the label
+//		pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+//		pupilDilationLabel.setPadding(new Insets(0, 0, 0, 7));
+//		ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+//
+//		// Add items to the ComboBox
+//
+//		pupilDilationComboBox.getItems().addAll("-------", "Not Necessary",
+//				"Declined (please note reason drop were declined", "1 gtt. tropicamide 0.5 %", "1 gtt. tropicamide 1 %",
+//				"Othes Dilating Agents (please note dilating agents used)");
+//		pupilDilationComboBox.setValue("------");
+//pupilDilationComboBox.setPrefSize(240, 5);
+//		pupilDilationComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+//		vboxForPupilDilation.getChildren().addAll(pupilDilationLabel, pupilDilationComboBox);
+//		vboxForPupilDilation.setStyle(
+//				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+//		diabeticGridPane.add(vboxForPupilDilation, 0, 0);
+//	    clickComboBox(pupilDilationComboBox, "------");
+//	
+//	    
+		
+
+///  HAEMOGLOBIN
+		VBox vboxForHaemoglobin = new VBox();
+		vboxForHaemoglobin.setPrefSize(240, 30);
+		vboxForHaemoglobin.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+		Label haemoglobinLabel = new Label("Hemoglobin A1C");
+		haemoglobinLabel.setPadding(new Insets(0, 0, 0, 7));
+		TextField haemoglobinTextField = new TextField();
+		haemoglobinTextField.setPromptText("Type Here");
+		haemoglobinTextField.setStyle(
+				"-fx-background-color:transparent;-fx-border-color:white;-fx-border-radius:0;-fx-border-width:0;");
+
+//Add the TextField and Label to the StackPane
+		vboxForHaemoglobin.getChildren().addAll(haemoglobinLabel, haemoglobinTextField);
+
+//Add the StackPane to the GridPane
+		medicalrecordGridPane.add(vboxForHaemoglobin, 0, 2);
+
+		// last eye exam
+
+		VBox vboxForLastEyeExam = new VBox();
+		vboxForLastEyeExam.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+//Create a Text node for the "*" symbol
+		Text redAsterisklastEyeExam = new Text("*");
+//redAsterisk.setStyle(Color.RED);
+		redAsterisklastEyeExam.setFill(Color.RED);
+
+//Combine the Text node and the rest of the label text
+		String lastEye = "Last Eye Exam";
+		Label lastEyeLabel = new Label(lastEye + " ");
+//text will be set as the graphic to the label
+		lastEyeLabel.setGraphic(redAsterisklastEyeExam);
+		lastEyeLabel.setPadding(new Insets(0, 0, 0, 7));
+		lastEyeLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		ComboBox<String> lastEyeExamComboBox = new ComboBox<>();
+		lastEyeExamComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+//Add items to the ComboBox
+		lastEyeExamComboBox.getItems().addAll("---Select---", "Within 9 Month", "9 to 15 Months",
+				"15 Months to 2 Years", "2 to 5 Years", "More Than 5 Years", "Never");
+		//lastEyeExamComboBox.setPromptText("Select");
+		lastEyeExamComboBox.setValue("---Select---");
+		lastEyeExamComboBox.setPrefSize(240, 5);
+		lastEyeExamComboBox.setStyle("-fx-background-color: transparent;");
+
+		vboxForLastEyeExam.getChildren().addAll(lastEyeLabel, lastEyeExamComboBox);
+		//vboxForLastEyeExam.setPrefSize(240,20);
+		clickComboBox(lastEyeExamComboBox, "---Select---");
+		medicalrecordGridPane.add(vboxForLastEyeExam, 1, 0);
+		
+
+		///// for USUAL BLOOD SUGAR LEVEL
+
+		Label usualBloodSugalrLabel = new Label("Usual Blood Sugar label");
+
+		TextField highUsualBloodSugar = new TextField();
+		highUsualBloodSugar.setPromptText("High");
+		highUsualBloodSugar.setPrefWidth(60);
+		TextField lowUsualBloodSugar = new TextField();
+
+		lowUsualBloodSugar.setPromptText("Low");
+		TextField averageUsualBloodSugar = new TextField();
+		lowUsualBloodSugar.setPrefWidth(60);
+		averageUsualBloodSugar.setPromptText("Average");
+		averageUsualBloodSugar.setPrefWidth(65);
+		HBox hboxforUsualBloodSugarlabel = new HBox(2);
+		hboxforUsualBloodSugarlabel.getChildren().addAll(highUsualBloodSugar, lowUsualBloodSugar,
+				averageUsualBloodSugar);
+		VBox vboxUsualBloodSugarLabel = new VBox(3);
+		vboxUsualBloodSugarLabel.getChildren().addAll(usualBloodSugalrLabel, hboxforUsualBloodSugarlabel);
+		medicalrecordGridPane.add(vboxUsualBloodSugarLabel, 0, 1);
+		vboxUsualBloodSugarLabel
+				.setStyle("-fx-background-color:white;-fx-border-color:black;-fx-border-radius:5;-fx-border-width:1;");
+		vboxUsualBloodSugarLabel.setPadding(new Insets(5));
+
+//		//// year of diabates
+//		VBox vboxForYearOfDiabates = new VBox();
+//		Text yearOfDiabatesRedAstrickdiab = new Text("*");
+//		yearOfDiabatesRedAstrickdiab.setFill(Color.RED);
+//		String yearWithDibates = " Diabetes";
+//		Label yearWithDibatesLabel = new Label(yearWithDibates + " ");
+//		yearWithDibatesLabel.setGraphic(yearOfDiabatesRedAstrickdiab);
+//		yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+//		yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+//		ComboBox<String> yearWithDiabatesComboBox = new ComboBox<String>();
+//		yearWithDiabatesComboBox.getItems().addAll("--Select--", "Not diabetic", "Borderline", "Borderline Diabetic ",
+//				"1 year or Less", "2 Years", "3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years",
+//				"16-20 Years", "More Than 20 Years");
+//		yearWithDiabatesComboBox.setValue("---Select---");
+//	yearWithDiabatesComboBox.setPrefSize(240, 5);
+//		yearWithDiabatesComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+//		vboxForYearOfDiabates.getChildren().addAll(yearWithDibatesLabel, yearWithDiabatesComboBox);
+//		vboxForYearOfDiabates.setStyle(
+//				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+//vboxForYearOfDiabates.setPrefSize(240, 30);
+
+////Create secondary ComboBox
+//		VBox insulinVbox = new VBox(5);
+//		Label insulinlabel = new Label("Insulin Duration");
+//		insulinlabel.setPadding(new Insets(5));
+//		ComboBox<String> insulinDependentComboBox = new ComboBox<>();
+//		insulinDependentComboBox
+//				.setStyle("-fx-border-width: 0;-fx-border-color:white;-fx-background-color: transparent;");
+//		insulinDependentComboBox.setPrefSize(240, 5);
+//		insulinDependentComboBox.getItems().addAll("--Select--", "Not insulin dependent", "1 year or Less", "2 Years",
+//				"3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years", "16-20 Years", "More Than 20 Years");
+//		insulinVbox.getChildren().addAll(insulinlabel, insulinDependentComboBox);
+//		insulinVbox
+//				.setStyle(" -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+//		insulinVbox.setVisible(false);
+//
+////Create text field for reason
+//		TextField reasonTextField = new TextField();
+//		reasonTextField.setPrefSize(150, 50);
+//		reasonTextField.setPromptText("Reason For Consultation");
+//		reasonTextField.setVisible(false);
+//		reasonTextField.setStyle("-fx-border-color:black;-fx-border-width: 1;-fx-border-radius: 5;");
+		
+
+//		diabaticTypeVBox = new VBox(5);
+//		Label diabeticTypelabel = new Label("Diabetic Type");
+//		diabeticTypelabel.setPadding(new Insets(0, 0, 0, 7));
+//		ComboBox<String> diabeticTypeComboBox = new ComboBox<>();
+//		diabeticTypeComboBox.setStyle("-fx-border-width: 0;-fx-border-color:white;-fx-background-color: transparent;");
+//		diabeticTypeComboBox.setPrefSize(240, 5);
+//		diabaticTypeVBox.setVisible(true);
+//		diabeticTypeComboBox.getItems().addAll("Type-1", "Type-2", "Other");
+//		diabeticTypeComboBox.setPromptText("Select Diabetic Type");
+//		
+//		diabaticTypeVBox.getChildren().addAll(diabeticTypelabel, diabeticTypeComboBox);
+//		diabaticTypeVBox
+//				.setStyle(" -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+//		diabeticGridPane.add(diabaticTypeVBox, 1, 1); // Add StackPane for secondary controls
+//		diabeticTypeComboBox.setOnAction(e -> {
+//
+//			if (diabeticTypeComboBox.getValue().equals("Other")) {
+//				diabaticTypeTextfield.setVisible(true);
+//			} else {
+//				diabaticTypeTextfield.setVisible(false);
+//			}
+//
+//		});
+//
+//		insulinVBox = new VBox(5);
+//		insulinVBox.setVisible(true);
+//		Label insulinTypelabel = new Label("Insulin Duration");
+//		insulinTypelabel.setPadding(new Insets(0, 0, 0, 7));
+//		
+//		ComboBox<String> insulinTypeComboBox = new ComboBox<>();
+//		insulinTypeComboBox.setValue("---Select---");
+//		insulinTypeComboBox.setStyle("-fx-border-width: 0;-fx-border-color:white;-fx-background-color: transparent;");
+//		insulinTypeComboBox.setPrefSize(240, 5);
+//	
+//		
+//		insulinTypeComboBox.getItems().addAll("---Select---","1 year or Less", "2 Years", "3 Years", "4 Years", "5 Years",
+//				"6-10 Years", "11-15 Years", "16-20 Years", "More Than 20 Years");
+//		clickComboBox(insulinTypeComboBox, "---Select---");
+////insulinDependentComboBox.setPromptText("Insulin dependent");
+//		insulinVBox.getChildren().addAll(insulinTypelabel, insulinTypeComboBox);
+//		insulinVBox
+//				.setStyle(" -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+////insulinVBox.setVisible(false);
+//		//medicalrecordGridPane.add(insulinVBox, 0, 1); // Add StackPane for secondary controls
+//		diabeticGridPane.add(insulinVBox, 0, 1);
+//	diabeticGridPane.add(vboxForYearOfDiabates, 1, 0);
+//		diabaticTypeTextfield = new TextField();
+//		diabaticTypeTextfield.setPrefSize(150, 50);
+//		diabaticTypeTextfield.setVisible(false);
+//		diabaticTypeTextfield.setPromptText("Please Mention Type");
+//		diabaticTypeTextfield
+//				.setStyle("-fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+//		//medicalrecordGridPane.add(diabaticTypeTextfield, 2, 1);
+//		diabeticGridPane.add(diabaticTypeTextfield, 2, 1);
+
+///// CHOLESTORAL
+
+		VBox vboxCholerstrol = new VBox();
+		vboxCholerstrol.setStyle(
+				"-fx-background-color: transparent; -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+//Create a Label for "Haemoglobin"
+		Label cholestaorolLabel = new Label("Cholesterol");
+		cholestaorolLabel.setPadding(new Insets(0, 0, 0, 7));
+
+//Create a TextField with a placeholder text
+		TextField cholestorolTextField = new TextField();
+		cholestorolTextField.setPromptText("Type Here");
+		cholestorolTextField.setStyle(
+				"-fx-background-color:transparent;-fx-border-color:white;-fx-border-radius:0;-fx-border-width:0;");
+		vboxCholerstrol.getChildren().addAll(cholestaorolLabel, cholestorolTextField);
+
+		medicalrecordGridPane.add(vboxCholerstrol, 1, 2);
+
+		VBox vboxtrigy = new VBox();
+		vboxtrigy.setStyle(
+				"-fx-background-color: transparent ;-fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+		Label trigyLabel = new Label("Triglycerides");
+		trigyLabel.setPadding(new Insets(0, 0, 0, 7));
+		TextField trigyTextField = new TextField();
+		trigyTextField.setPromptText("Type Here");
+
+		vboxtrigy.getChildren().addAll(trigyLabel, trigyTextField);
+
+		trigyTextField.setStyle(
+				"-fx-background-color:transparent;-fx-border-color:transparent;-fx-border-radius:5;-fx-border-width:1;");
+
+		medicalrecordGridPane.add(vboxtrigy, 1, 3);
+
+		VBox vboxForGlaucomaHistory = new VBox(5);
+
+		// Create CheckBoxes
+		CheckBox noCheckBox = new CheckBox("No");
+		
+		CheckBox selfCheckBox = new CheckBox("Self");
+		noCheckBox.setPadding(new Insets(0,0,0,27));
+		CheckBox parentsCheckBox = new CheckBox("Parents");
+		parentsCheckBox.setPadding(new Insets(0,0,0,27));
+		CheckBox siblingsCheckBox = new CheckBox("Siblings");
+		CheckBox notSureCheckBox = new CheckBox("Not Sure");
+
+		// Create HBoxes for the lines with spacing and padding
+		HBox firstLine = new HBox(20); // Adding 10px spacing between checkboxes in the first line
+		firstLine.setPadding(new Insets(0,0,0,7)); // Adding padding around the first line
+		HBox secondLine = new HBox(20); // Adding 10px spacing between checkboxes in the second line
+		secondLine.setPadding(new Insets(0,0,0,7)); // Adding padding around the second line
+
+		// Add CheckBoxes to the HBoxes
+		firstLine.getChildren().addAll( selfCheckBox,noCheckBox,parentsCheckBox);
+		secondLine.getChildren().addAll(notSureCheckBox,siblingsCheckBox);
+
+		// Create a VBox to hold the HBoxes with spacing between lines
+		VBox checkBoxesVBox = new VBox(5); // Adding 10px spacing between lines
+		checkBoxesVBox.getChildren().addAll(firstLine, secondLine);
+
+		String glaucoaHistory = "Glaucoma History";
+		Text galaucomaHistory = new Text("*");
+		galaucomaHistory.setFill(Color.RED);
+		Label glaucomaHistoryLabel = new Label(glaucoaHistory + " ");
+		glaucomaHistoryLabel.setPadding(new Insets(0, 0, 0, 7));
+		glaucomaHistoryLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		glaucomaHistoryLabel.setGraphic(galaucomaHistory);
+
+		// Add Label and CheckBoxes VBox to the main VBox
+		vboxForGlaucomaHistory.getChildren().addAll(glaucomaHistoryLabel, checkBoxesVBox);
+		vboxForGlaucomaHistory.setStyle(
+		        "-fx-background-color: transparent; -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+		// Add VBox to GridPane
+		medicalrecordGridPane.add(vboxForGlaucomaHistory, 0, 0);
+
+		/// Pregnency field
+
+		// Create the Label
+		Label pregnantLabel = new Label("Pregnant Now/Within 6 Months");
+
+		// Create the RadioButtons
+		RadioButton unKnownButton = new RadioButton("UnKnown");
+		RadioButton yesButton = new RadioButton("Yes");
+		RadioButton noButton = new RadioButton("No");
+
+		// Create a ToggleGroup to make the RadioButtons mutually exclusive
+		ToggleGroup toggleGroup = new ToggleGroup();
+		yesButton.setToggleGroup(toggleGroup);
+		noButton.setToggleGroup(toggleGroup);
+		unKnownButton.setToggleGroup(toggleGroup);
+		HBox hboxForpregnancy = new HBox(5);
+		hboxForpregnancy.getChildren().addAll(unKnownButton,yesButton, noButton);
+
+		// Create a VBox and add the Label and RadioButtons to it
+		vboxforPregnancy = new VBox(5); // 10 is the spacing between elements
+		vboxforPregnancy.setVisible(false);
+		vboxforPregnancy.setPadding(new Insets(2));
+
+		vboxforPregnancy.getChildren().addAll(pregnantLabel, hboxForpregnancy);
+		vboxforPregnancy.setPrefSize(190, 50);
+		vboxforPregnancy.setStyle(
+				"-fx-background-color: transparent; -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+		medicalrecordGridPane.add(vboxforPregnancy, 2, 2);
+
+///////////HYPERTENSION
+
+		VBox vboxForHyperTension = new VBox();
+		Label hyperTensionLabel = new Label("Hypertension");
+		// hyperTensionLabel.setAlignment(Pos.TOP_CENTER);
+		hyperTensionLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		ComboBox<String> hyperTensionComboBox = new ComboBox<>();
+
+//Add items to the ComboBox
+		hyperTensionComboBox.getItems().addAll("---Select---","No", "Controlled", "Uncontrolled", "Unknown");
+
+		hyperTensionComboBox.setValue("---Select---");
+		//hyperTensionComboBox.setPrefSize(330, 5);
+		hyperTensionComboBox.setPrefWidth(220);
+		hyperTensionComboBox.setStyle("-fx-background-color: transparent;");
+		vboxForHyperTension.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+		vboxForHyperTension.getChildren().addAll(hyperTensionLabel, hyperTensionComboBox);
+		
+
+		// gridPane.add(vboxForHyperTension, 0, 7);
+		medicalrecordGridPane.add(vboxForHyperTension, 0, 3);
+
+//////////////MEDICATION
+
+		VBox vboxmedication = new VBox();
+
+		// Create a Label for "Haemoglobin"
+		Label medicationLabel = new Label("Medication");
+		medicationLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		// Create a TextField with a placeholder text
+		TextField medicationTextField = new TextField();
+		medicationTextField.setPromptText("Type Here");
+
+		medicationTextField.setStyle("-fx-background-color:transparent;-fx-border-color:transparent;");
+		vboxmedication.setStyle(
+				"-fx-background-color: transparent; -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+		// Add the TextField and Label to the StackPane
+		vboxmedication.getChildren().addAll(medicationLabel, medicationTextField);
+
+		medicalrecordGridPane.add(vboxmedication, 0, 5);
+
+////SUBJECTIVE DIABATIC CONTROL
+		VBox vboxForSubjectiveDiabaticControl = new VBox();
+		Label subjectiveDiabaticControllLabel = new Label("Subjective Diabetic Control");
+		subjectiveDiabaticControllLabel.setPadding(new Insets(0, 0, 0, 7));
+		ComboBox<String> subjectiveDiabticControlComboBox = new ComboBox<>();
+		subjectiveDiabticControlComboBox.setValue("---Select---");
+		subjectiveDiabticControlComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0); ");
+//Add items to the ComboBox
+		subjectiveDiabticControlComboBox.getItems().addAll("---Select---", "Excellent", "Good", "Moderate", "Fair",
+				"Poor");
+		subjectiveDiabticControlComboBox.setPrefSize(240, 5);
+		subjectiveDiabticControlComboBox.setStyle("-fx-background-color: transparent; ");
+
+		vboxForSubjectiveDiabaticControl.getChildren().addAll(subjectiveDiabaticControllLabel,
+				subjectiveDiabticControlComboBox);
+
+		vboxForSubjectiveDiabaticControl.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+
+		medicalrecordGridPane.add(vboxForSubjectiveDiabaticControl, 0, 4);
+		clickComboBox(subjectiveDiabticControlComboBox, "---Select---");
+
+		////////// MOST RECENT BLOOD TEST
+		Label mostRecentLabel = new Label("Most Recent Blood Test");
+		ComboBox<String> yearMostRecentBloodTest = new ComboBox<>();
+		yearMostRecentBloodTest.getItems().addAll("2021", "2022", "2023", "2024");
+		ComboBox<String> monthRecentBloodTest = new ComboBox<>();
+		monthRecentBloodTest.getItems().addAll("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+				"Nov", "Dec");
+		HBox hboxForMostRecentBoodTest = new HBox(5);
+		hboxForMostRecentBoodTest.getChildren().addAll(yearMostRecentBloodTest, monthRecentBloodTest);
+		VBox vboxForMostRecentBloodTest = new VBox(5);
+		vboxForMostRecentBloodTest.setPadding(new Insets(2));
+		vboxForMostRecentBloodTest.getChildren().addAll(mostRecentLabel, hboxForMostRecentBoodTest);
+		vboxForMostRecentBloodTest.setStyle(
+				"-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 5; -fx-border-width: 1; -fx-text-fill: black;");
+		medicalrecordGridPane.add(vboxForMostRecentBloodTest, 1,1);
+
+		////// OTHER HISTORY OR INFORMATION
+
+		// Create a StackPane to overlay the TextField and Label
+		VBox otherInformationVbox = new VBox();
+		// Create a Label for "Haemoglobin"
+		Label otherInformationLabel = new Label("Other  history Or Information");
+		otherInformationLabel.setPadding(new Insets(0, 0, 0, 7));
+
+		// Create a TextField with a placeholder text
+		TextField otherHistoryTextField = new TextField();
+		otherHistoryTextField.setPromptText("Type Here");
+		otherHistoryTextField.setStyle("-fx-background-color:transparent;-fx-border-color:transparent;");
+
+		// Add the TextField and Label to the StackPane
+		otherInformationVbox.getChildren().addAll(otherInformationLabel, otherHistoryTextField);
+		otherInformationVbox.setStyle("-fx-border-color:black;-fx-border-radius:5;");
+
+		// Add the StackPane to the GridPane
+		medicalrecordGridPane.add(otherInformationVbox, 1, 6);
+
+		// making the clolumn span to two
+	//	GridPane.setColumnSpan(otherInformationVbox, 2);
+
+		////////// IOP 
+
+		Label ioplabel = new Label("IOP");
+		ioplabel.setStyle("-fx-font-weight: bold;");
+		Label rightEyeIopLabel = new Label("Right Eye");
+		TextField rightIopTextField = new TextField();
+		rightIopTextField.setPrefWidth(40);
+		Label leftEyeIop = new Label("Left Eye  ");
+		TextField leftEyeTextField = new TextField();
+		leftEyeTextField.setPrefWidth(40);
+
+		HBox hboxForIop = new HBox(5);
+		hboxForIop.getChildren().addAll(rightEyeIopLabel, rightIopTextField);
+		HBox leftEyeIopHbox = new HBox(5);
+		leftEyeIopHbox.getChildren().addAll(leftEyeIop, leftEyeTextField);
+		VBox vboxForIop = new VBox(2);
+		vboxForIop.getChildren().addAll(ioplabel, hboxForIop, leftEyeIopHbox);
+		medicalrecordGridPane.add(vboxForIop, 0, 6);
+		vboxForIop.setStyle("-fx-border-color:black;-fx-border-radius:0;");
+		vboxForIop.setPadding(new Insets(3));
+
+///// Visual aquity
+
+		Label visualAcuityLabel = new Label("Visual Acuity");
+		visualAcuityLabel.setStyle("-fx-font-weight:bold;");
+		Label rightEyeLabel = new Label("Right Eye 20/");
+		TextField rightEyeField = new TextField();
+		Label leftEyeLabel = new Label("Left Eye 20/   ");
+		TextField leftEyeField = new TextField();
+		HBox righteyeaquity = new HBox(4);
+		righteyeaquity.getChildren().addAll(rightEyeLabel, rightEyeField);
+		HBox leftEyeEquity = new HBox(4);
+		leftEyeEquity.getChildren().addAll(leftEyeLabel, leftEyeField);
+
+// Pinhole Radio Buttons
+		Label pinholeLabel = new Label("Pinhole");
+		ToggleGroup pinholeGroup = new ToggleGroup();
+		RadioButton pinholeYes = new RadioButton("Yes");
+		pinholeYes.setToggleGroup(pinholeGroup);
+		RadioButton pinholeNo = new RadioButton("No");
+		pinholeNo.setToggleGroup(pinholeGroup);
+		HBox pinHoleHBox = new HBox(3);
+		pinHoleHBox.getChildren().addAll(pinholeLabel, pinholeYes, pinholeNo);
+
+// With Rx Radio Buttons
+		Label withRxLabel = new Label("With Rx");
+		ToggleGroup withRxGroup = new ToggleGroup();
+		RadioButton withRxYes = new RadioButton("Yes");
+		withRxYes.setToggleGroup(withRxGroup);
+		RadioButton withRxNo = new RadioButton("No");
+		withRxNo.setToggleGroup(withRxGroup);
+		HBox rxLabel = new HBox(4);
+		rxLabel.getChildren().addAll(withRxLabel, withRxYes, withRxNo);
+		VBox visualaquityVbox = new VBox(3);
+		visualaquityVbox.getChildren().addAll(visualAcuityLabel, righteyeaquity, leftEyeEquity, pinHoleHBox, rxLabel);
+		visualaquityVbox.setPadding(new Insets(4));
+		visualaquityVbox.setStyle("-fx-border-color:black;-fx-border-radius:2;");
+		medicalrecordGridPane.add(visualaquityVbox, 1, 4);
+		GridPane.setRowSpan(visualaquityVbox, 2);
+		
+//		// Add listener to yearWithDiabetesComboBox
+//		yearWithDiabatesComboBox.setOnAction(e -> {
+//		    String selectedValue = yearWithDiabatesComboBox.getValue();
+//		    
+//		    if ("Not diabetic".equals(selectedValue)) {
+////		        reasonTextField.setVisible(true);
+////		        diabaticTypeVBox.setVisible(false);
+////		        insulinVBox.setVisible(false);
+////		        diabaticTypeTextfield.setVisible(false);
+//		       // vboxMed.getChildren().remove(0);
+//		       // vboxMed.getChildren().add(0,diabeticGrid());
+//
+//		    } else if ("--select--".equalsIgnoreCase(selectedValue)) {
+////		        diabaticTypeVBox.setVisible(false);
+////		       insulinVBox.setVisible(false);
+////		        reasonTextField.setVisible(false);
+////		        diabaticTypeTextfield.setVisible(false);
+//		        
+//		    } else {
+////		        diabaticTypeVBox.setVisible(true);
+////		        insulinVBox.setVisible(true);
+////		        reasonTextField.setVisible(false);
+////		        diabaticTypeTextfield.setVisible(false);
+//
+//		    }
+//		});
+		
+		vboxMed.getChildren().addAll(diabeticGrid(),medicalrecordGridPane);
+		return vboxMed;
+	}
+
+	public static GridPane personalGrid() {
+
+		GridPane gridPane = new GridPane();
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
+		Label nameLabel = new Label("NAME"); // Label without asterisk
+
+		/// Name
+
+//Add an asterisk in red color
+		Label asteriskLabel = new Label("*");
+		asteriskLabel.setStyle("-fx-text-fill: red;");
+		HBox nameHBox = new HBox();
+		nameHBox.getChildren().addAll(nameLabel, asteriskLabel);
+		TextField nameTextField = new TextField();
+		nameTextField.setPromptText("Type Here");
+		nameTextField.setPrefWidth(220);
+		HBox hboxForNameAndTextBox = new HBox(5);
+		 hboxForNameAndTextBox.setPrefSize(240, 20);
+		hboxForNameAndTextBox.getChildren().addAll(nameHBox, nameTextField);
+		nameTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		gridPane.add(hboxForNameAndTextBox, 0, 0); // Use the HBox containing nameLabel and asteriskLabel
+		Label genderLabel = new Label("GENDER");
+		Label asteriskLabel1 = new Label("*");
+		asteriskLabel1.setStyle("-fx-text-fill: red;");
+		/// GENDER
+
+		HBox hboxforGenderLabelAndAstricksymbol = new HBox(1);
+		ComboBox<String> genderComboBox = new ComboBox<>();
+		genderComboBox.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		genderComboBox.setPromptText("Select One");
+		genderComboBox.getItems().addAll("Male", "Female", "Unknown", "Others");
+		genderComboBox.setPrefWidth(220); // Adjust the width as needed
+		HBox hboxForGenderAndComboBox = new HBox(5);
+		hboxForGenderAndComboBox.getChildren().addAll(hboxforGenderLabelAndAstricksymbol, genderComboBox);
+	
+		genderComboBox.setOnAction(e -> {
+			if (genderComboBox.getValue().contentEquals("Female")) {
+vboxforPregnancy.setVisible(true);
+			}
+			else {
+				vboxforPregnancy.setVisible(false);
+			}
+		});
+		hboxforGenderLabelAndAstricksymbol.getChildren().addAll(genderLabel, asteriskLabel1);
+		HBox hboxFormrnLabelandAstrick = new HBox();
+		Label asteriskLabel2 = new Label("*");
+		asteriskLabel2.setStyle("-fx-text-fill: red;");
+		/// MRN
+		Label mrnLabel = new Label("MRN");
+		hboxFormrnLabelandAstrick.getChildren().addAll(mrnLabel, asteriskLabel2);
+		TextField mrnTextField = new TextField();
+		mrnTextField.setPromptText("Type Here");
+		mrnTextField.setPrefWidth(220);
+		mrnTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		HBox hboxForMrnLabelAndTextBox = new HBox(5);
+		hboxForMrnLabelAndTextBox.getChildren().addAll(hboxFormrnLabelandAstrick, mrnTextField);
+		hboxForMrnLabelAndTextBox.setPadding(new Insets(0,2,0,0));
+		gridPane.add(hboxForMrnLabelAndTextBox, 0, 1);
+		HBox hboxForEthinicityandComboBox = new HBox(5);
+		Label ethinicityLabel = new Label("ETHINCITY");
+		ComboBox<String> ethinictyComboBox = new ComboBox<>();
+		ethinictyComboBox.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		ethinictyComboBox.setPromptText("Select One");
+		ethinictyComboBox.setPrefWidth(220);
+		ethinictyComboBox.getItems().addAll("Not Specified", "African American/African Descent",
+				"Latin American/Hispanic", "Caucasian/White", "Asian/Pacific Islander", "Indian subcontinent origin",
+				"Native American/Alaskan Native", "Multi-racial", "Decline To State", "Other");
+		hboxForEthinicityandComboBox.getChildren().addAll(ethinicityLabel, ethinictyComboBox);
+		gridPane.add(hboxForEthinicityandComboBox, 1, 1);
+		gridPane.add(hboxForGenderAndComboBox, 1, 0);
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		Label dobLabel = new Label("DOB:  ");
+		TextField dobTextField = new TextField();
+		dobTextField.setPrefWidth(220);
+		dobTextField.setPromptText("yyyy-MM-dd");
+		dobTextField.setStyle("-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+
+		// Create a DatePicker for the date selection
+		DatePicker dobDatePicker = new DatePicker();
+
+		dobDatePicker.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3");
+		dobDatePicker.setPrefSize(10, 10);
+
+		// Show the DatePicker when the TextField is clicked
+		dobTextField.setOnMouseClicked(event -> dobDatePicker.show());
+
+		// Sync the DatePicker with the TextField
+		dobDatePicker.valueProperty().addListener((obs, oldDate, newDate) -> {
+			if (newDate != null) {
+				//dobTextField.setText(dateFormatter.format(newDate));
+				  String formattedDate = dateFormatter.format(newDate);
+			        dobTextField.setText(formattedDate);
+			        dobTextField.positionCaret(formattedDate.length());
+
+			}
+		});
+
+		// Set initial value for the DatePicker and TextField (optional)
+		dobDatePicker.setPromptText("yyyy-MM-dd");
+		dobTextField.setEditable(true);
+
+		HBox hboxForDobLabelandDatePicker1 = new HBox(5);
+		hboxForDobLabelandDatePicker1.getChildren().addAll(dobLabel, dobTextField);
+
+		// Optionally, add the DatePicker to the scene graph but make it invisible
+		// This step ensures that the DatePicker is part of the scene graph and can be
+		// shown
+		dobDatePicker.setOpacity(0);
+		hboxForDobLabelandDatePicker1.getChildren().add(dobDatePicker);
+		gridPane.add(hboxForDobLabelandDatePicker1, 0, 2);
+		Label contactLabel = new Label("Contact No");
+		TextField contactTextField = new TextField();
+		contactTextField.setPrefWidth(220);
+		contactTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3");
+		HBox hboxFoContactField = new HBox(4);
+		hboxFoContactField.getChildren().addAll(contactLabel, contactTextField);
+		gridPane.add(hboxFoContactField, 1, 2);
+		
+		Label emailLabel = new Label("Email");
+		emailLabel.setPadding(new Insets(0,5,0,0));
+		TextField emailTextField = new TextField();
+		emailTextField.setPrefWidth(220);
+		emailTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3");
+		HBox hboxFoemailAndTextField = new HBox(5);
+		hboxFoemailAndTextField.getChildren().addAll(emailLabel, emailTextField);
+
+		CheckBox declineDataSharingCheckBox = new CheckBox(
+				"Patient declines to share de-identified\ndata for research and development");
+		gridPane.add(hboxFoemailAndTextField, 0, 3);
+		gridPane.add(declineDataSharingCheckBox, 1, 3);
+		return gridPane;
+	}
+
+	public static GridPane personalGridForUpload(Label label) {
+
+		GridPane gridPane = new GridPane();
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
+		Label nameLabel = new Label("NAME"); // Label without asterisk
+//Add an asterisk in red color
+		Label asteriskLabel = new Label("*");
+		asteriskLabel.setStyle("-fx-text-fill: red;");
+		HBox nameHBox = new HBox(1);
+		nameHBox.getChildren().addAll(nameLabel, asteriskLabel);
+		TextField nameTextField = new TextField();
+		nameTextField.setPrefWidth(220);
+		
+		nameTextField.setPromptText("Type Here");
+		nameTextField.setText(label.getText());
+		HBox hboxForNameAndTextBox = new HBox(5);
+		// hboxForNameAndTextBox.setPrefSize(240, 20);
+		hboxForNameAndTextBox.getChildren().addAll(nameHBox, nameTextField);
+		nameTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		gridPane.add(hboxForNameAndTextBox, 0, 0); // Use the HBox containing nameLabel and asteriskLabel
+		Label genderLabel = new Label("GENDER ");
+		Label asteriskLabel1 = new Label("*");
+		asteriskLabel1.setStyle("-fx-text-fill: red;");
+		/// GENDER
+		HBox hboxforGenderLabelAndAstricksymbol = new HBox(1);
+		ComboBox<String> genderComboBox = new ComboBox<>();
+	//	genderComboBox.setPrefWidth(220);
+		//genderComboBox.setEditable(true);
+		genderComboBox.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		genderComboBox.setValue("Select");
+		genderComboBox.getItems().addAll("Select","Male", "Female", "Others", "Unknown");
+		/// setting action for gender combobox
+		genderComboBox.setOnAction(e->{
+			
+			if(genderComboBox.getValue().equals("Female")){
+				vboxforPregnancy.setVisible(true);
+		}
+			else {
+				vboxforPregnancy.setVisible(false);
+			}
+				
+		});
+		
+//		genderComboBox.setOnMouseClicked(e->
+//		{
+//			genderComboBox.setValue(" ");
+//			genderComboBox.show();
+//		});
+		clickComboBox(genderComboBox,"Select");
+
+		
+		genderComboBox.setPrefWidth(240); // Adjust the width as needed
+		HBox hboxForGenderAndComboBox = new HBox(5);
+		hboxForGenderAndComboBox.getChildren().addAll(hboxforGenderLabelAndAstricksymbol, genderComboBox);
+		hboxforGenderLabelAndAstricksymbol.getChildren().addAll(genderLabel, asteriskLabel1);
+		HBox hboxFormrnLabelandAstrick = new HBox();
+		Label asteriskLabel2 = new Label("*");
+		asteriskLabel2.setStyle("-fx-text-fill: red;");
+		/// MRN
+		Label mrnLabel = new Label("MRN");
+		hboxFormrnLabelandAstrick.getChildren().addAll(mrnLabel, asteriskLabel2);
+		hboxFormrnLabelandAstrick.setPadding(new Insets(0,6,0,0));
+		TextField mrnTextField = new TextField();
+		mrnTextField.setPrefWidth(220);
+		mrnTextField.setPromptText("Type Here");
+		mrnTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		HBox hboxForMrnLabelAndTextBox = new HBox(5);
+		hboxForMrnLabelAndTextBox.getChildren().addAll(hboxFormrnLabelandAstrick, mrnTextField);
+		gridPane.add(hboxForMrnLabelAndTextBox, 0, 1);
+		HBox hboxForEthinicityandComboBox = new HBox(5);
+		Label ethinicityLabel = new Label("ETHINCITY");
+		ComboBox<String> ethinictyComboBox = new ComboBox<>();
+		ethinictyComboBox.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		//ethinictyComboBox.setPromptText("Select One");
+		ethinictyComboBox.setValue("Not Specified");
+		ethinictyComboBox.setPrefWidth(240);
+		ethinictyComboBox.getItems().addAll("Not Specified", "African American/African Descent",
+				"Latin American/Hispanic", "Caucasian/White", "Asian/Pacific Islander", "Indian subcontinent origin",
+				"Native American/Alaskan Native", "Multi-racial", "Decline To State", "Other");
+		hboxForEthinicityandComboBox.getChildren().addAll(ethinicityLabel, ethinictyComboBox);
+		gridPane.add(hboxForEthinicityandComboBox, 1, 1);
+		gridPane.add(hboxForGenderAndComboBox, 1, 0);
+		ethinictyComboBox.setOnMouseClicked(e->
+		
+				{
+				if(	ethinictyComboBox.getValue().equals("Not Specified"))
+					{
+						ethinictyComboBox.setValue("");
+						ethinictyComboBox.show();
+					}
+				});
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		Label dobLabel = new Label("DOB:   ");
+		TextField dobTextField = new TextField();
+		dobTextField.setPrefWidth(220);
+		dobTextField.setPromptText("yyyy-MM-dd");
+		dobTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+
+		///// Create a DatePicker for the date selection
+		DatePicker dobDatePicker = new DatePicker();
+
+		dobDatePicker.setPrefSize(10, 10);
+
+		// Show the DatePicker when the TextField is clicked
+		dobTextField.setOnMouseClicked(event -> dobDatePicker.show());
+
+		// Sync the DatePicker with the TextField
+		dobDatePicker.valueProperty().addListener((obs, oldDate, newDate) -> {
+			if (newDate != null) {
+				//dobTextField.setText(dateFormatter.format(newDate));
+				  String formattedDate = dateFormatter.format(newDate);
+			        dobTextField.setText(formattedDate);
+			        dobTextField.positionCaret(formattedDate.length());
+			}
+		});
+
+		// Set initial value for the DatePicker and TextField (optional)
+		dobDatePicker.setPromptText("yyyy-MM-dd");
+		dobTextField.setEditable(true);
+
+		HBox hboxForDobLabelandDatePicker1 = new HBox(5);
+		hboxForDobLabelandDatePicker1.getChildren().addAll(dobLabel, dobTextField);
+
+		// Optionally, add the DatePicker to the scene graph but make it invisible
+		// This step ensures that the DatePicker is part of the scene graph and can be
+		// shown
+		dobDatePicker.setOpacity(0);
+		hboxForDobLabelandDatePicker1.getChildren().add(dobDatePicker);
+		gridPane.add(hboxForDobLabelandDatePicker1, 0, 2);
+		Label contactLabel = new Label("Contact No");
+		TextField contactTextField = new TextField();
+		contactTextField.setPrefWidth(240);
+		contactTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+
+		HBox hboxFoContactField = new HBox(4);
+		hboxFoContactField.getChildren().addAll(contactLabel, contactTextField);
+		gridPane.add(hboxFoContactField, 1, 2);
+		Label emailLabel = new Label("Email");
+		emailLabel.setPadding(new Insets(0,8,0,0));
+		TextField emailTextField = new TextField();
+		emailTextField.setPrefWidth(220);
+		emailTextField.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black;-fx-border-radius: 3;");
+		HBox hboxFoemailAndTextField = new HBox(5);
+		hboxFoemailAndTextField.getChildren().addAll(emailLabel, emailTextField);
+
+		CheckBox declineDataSharingCheckBox = new CheckBox(
+				"Patient declines to share de-identified\ndata for research and development");
+		// gridPane.add(hboxForDobLabelandDatePicker, 0, 2);
+		gridPane.add(hboxFoemailAndTextField, 0, 3);
+		gridPane.add(declineDataSharingCheckBox, 1, 3);
+
+		return gridPane;
+	}
+	
+	/***
+	 * setting click event on the combobox 
+	 * @param combobox
+	 * @param label
+	 */
+public static void clickComboBox(ComboBox<String> combobox,String label)
+{
+	combobox.setOnMouseClicked(e->
+	{
+	if(combobox.getValue().equals(label))
+	{
+		combobox.setValue("");
+		combobox.show();
+	}
+
+});
+}
+
+///// handle for non diatec and insulin if passed
+public static GridPane diabeticGrid()
+{
+	GridPane alternativeGridPane=new GridPane();
+	alternativeGridPane.setHgap(5);
+	alternativeGridPane.setVgap(5);
+	/// pupil dilation
+
+			VBox vboxForPupilDilation = new VBox();
+			Text redAsterisk = new Text("*");
+			redAsterisk.setFill(Color.RED);
+
+			// Combine the Text node and the rest of the label text
+			String pupilDilationStringLabel = "Pupil Dilation";
+			Label pupilDilationLabel = new Label(pupilDilationStringLabel);
+			// text will be set as the graphic to the label
+			pupilDilationLabel.setGraphic(redAsterisk);
+			// the astrick trext will be put right to the label
+			pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+			pupilDilationLabel.setPadding(new Insets(0, 0, 0, 7));
+			ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+
+			// Add items to the ComboBox
+
+			pupilDilationComboBox.getItems().addAll("-------", "Not Necessary",
+					"Declined (please note reason drop were declined", "1 gtt. tropicamide 0.5 %", "1 gtt. tropicamide 1 %",
+					"Othes Dilating Agents (please note dilating agents used)");
+		//	pupilDilationComboBox.setPromptText("Select");
+			pupilDilationComboBox.setValue("------");
+			pupilDilationComboBox.setPrefSize(240, 5);
+			pupilDilationComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+			vboxForPupilDilation.getChildren().addAll(pupilDilationLabel, pupilDilationComboBox);
+		//	vboxForPupilDilation.setPrefSize(240, 20);
+			vboxForPupilDilation.setStyle(
+					"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+			// gridPane.add(vboxForPupilDilation, 0, 3);
+			//medicalrecordGridPane.add(vboxForPupilDilation, 0, 0);
+			alternativeGridPane.add(vboxForPupilDilation, 0, 0);
+			
+		//// year of diabates
+			VBox vboxForYearOfDiabates = new VBox();
+			vboxForYearOfDiabates.setPrefSize(240, 20);
+			Text yearOfDiabatesRedAstrickdiab = new Text("*");
+			yearOfDiabatesRedAstrickdiab.setFill(Color.RED);
+			String yearWithDibates = " Diabetes";
+			Label yearWithDibatesLabel = new Label(yearWithDibates + " ");
+			yearWithDibatesLabel.setGraphic(yearOfDiabatesRedAstrickdiab);
+			yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+			yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+			ComboBox<String> yearWithDiabatesComboBox1 = new ComboBox<String>();
+			yearWithDiabatesComboBox1.setPrefSize(220, 10);
+			yearWithDiabatesComboBox1.getItems().addAll("--Select--", "Not diabetic", "Borderline", "Borderline Diabetic ",
+					"1 year or Less", "2 Years", "3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years",
+					"16-20 Years", "More Than 20 Years");
+			//yearWithDiabatesComboBox.setPromptText("Select");
+			yearWithDiabatesComboBox1.setValue("---Select---");
+		//clickComboBox(yearWithDiabatesComboBox1, "Not diabetic");
+		yearWithDiabatesComboBox1.setPrefWidth(240);
+
+		
+
+			yearWithDiabatesComboBox1.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+			vboxForYearOfDiabates.getChildren().addAll(yearWithDibatesLabel, yearWithDiabatesComboBox1);
+			vboxForYearOfDiabates.setStyle(
+					"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+			//vboxForYearOfDiabates.setPrefSize(240, 30);
+			//medicalrecordGridPane.add(vboxForYearOfDiabates, 1, 0);
+//			diabeticGridPane.add(vboxForYearOfDiabates, 1, 0);
+			//clickComboBox(yearWithDiabatesComboBox1,"---Select---");
+
+			alternativeGridPane.add(vboxForYearOfDiabates, 1, 0);
+			
+			TextField reasonConsult=new TextField();
+			reasonConsult.setPromptText("Reason For Consultation");
+			reasonConsult.setVisible(false);
+			reasonConsult.setPrefSize(200, 50);
+			yearWithDiabatesComboBox1.setOnAction(e->
+			{
+				if(yearWithDiabatesComboBox1.getValue().equals("Not diabetic") )
+					
+				{
+					reasonConsult.setVisible(true);
+				}
+				
+				else if(yearWithDiabatesComboBox1.getValue().equals("--Select--"))
+				{
+					reasonConsult.setVisible(false);
+				}
+				else if((!yearWithDiabatesComboBox1.getValue().equals("Not diabetic")) ||(!yearWithDiabatesComboBox1.getValue().equals("--Select--")))
+				{
+					vboxMed.getChildren().remove(0);
+					
+					vboxMed.getChildren().add(0,handleDiabeticInsulinGridPane(yearWithDiabatesComboBox1));
+					
+				}
+//				else if (!yearWithDiabatesComboBox1.getValue().equals("--Select--"))
+//				{
+//					vboxMed.getChildren().remove(0);
+//					vboxMed.getChildren().add(0,diabeticGridPane);
+//					
+//				}
+				else {
+					
+					reasonConsult.setVisible(false);
+				}
+			});
+			alternativeGridPane.add(reasonConsult, 2, 0);
+			
+			
+			
+			
+	
+	
+	return alternativeGridPane;
+}
+/***
+ * handle insulin type for diabtic pane
+ * 
+ * */
+
+private static GridPane handleDiabeticInsulinGridPane(ComboBox<String> comboBox)
+{
+	    diabeticGridPane=new GridPane();
+	    diabeticGridPane.setHgap(3);
+	    diabeticGridPane.setVgap(3);
+	
+		/// pupil dilation
+
+		VBox vboxForPupilDilation = new VBox();
+		Text redAsterisk = new Text("*");
+		redAsterisk.setFill(Color.RED);
+
+		// Combine the Text node and the rest of the label text
+		String pupilDilationStringLabel = "Pupil Dilation";
+		Label pupilDilationLabel = new Label(pupilDilationStringLabel + " ");
+		// text will be set as the graphic to the label
+		pupilDilationLabel.setGraphic(redAsterisk);
+		// the astrick trext will be put right to the label
+		pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		pupilDilationLabel.setPadding(new Insets(0, 0, 0, 7));
+		ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+
+		// Add items to the ComboBox
+
+		pupilDilationComboBox.getItems().addAll("-------", "Not Necessary",
+				"Declined (please note reason drop were declined", "1 gtt. tropicamide 0.5 %", "1 gtt. tropicamide 1 %",
+				"Othes Dilating Agents (please note dilating agents used)");
+		pupilDilationComboBox.setValue("------");
+pupilDilationComboBox.setPrefSize(240, 5);
+		pupilDilationComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+		vboxForPupilDilation.getChildren().addAll(pupilDilationLabel, pupilDilationComboBox);
+		vboxForPupilDilation.setStyle(
+				"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+		diabeticGridPane.add(vboxForPupilDilation, 0, 0);
+	    clickComboBox(pupilDilationComboBox, "------");
+	    
+	    
+	//// year of diabates
+			VBox vboxForYearOfDiabates = new VBox();
+			Text yearOfDiabatesRedAstrickdiab = new Text("*");
+			yearOfDiabatesRedAstrickdiab.setFill(Color.RED);
+			String yearWithDibates = "Diabetes";
+			Label yearWithDibatesLabel = new Label(yearWithDibates + " ");
+			yearWithDibatesLabel.setGraphic(yearOfDiabatesRedAstrickdiab);
+			yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+			yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+			ComboBox<String> yearWithDiabatesComboBox = new ComboBox<String>();
+			
+			yearWithDiabatesComboBox.getItems().addAll("--Select--", "Not diabetic", "Borderline", "Borderline Diabetic ",
+					"1 year or Less", "2 Years", "3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years",
+					"16-20 Years", "More Than 20 Years");
+			yearWithDiabatesComboBox.setValue(comboBox.getValue());
+		yearWithDiabatesComboBox.setPrefSize(240, 5);
+			yearWithDiabatesComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+			vboxForYearOfDiabates.getChildren().addAll(yearWithDibatesLabel, yearWithDiabatesComboBox);
+			vboxForYearOfDiabates.setStyle(
+					"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+	diabeticGridPane.add(vboxForYearOfDiabates,1,0);
+	// setting action
+	yearWithDiabatesComboBox.setOnAction(e->
+	{
+		
+		if(yearWithDiabatesComboBox.getValue().equalsIgnoreCase("Not diabetic"))
+		{
+		GridPane diabGrid=	diabeticGrid(yearWithDiabatesComboBox);
+		vboxMed.getChildren().remove(0);
+		vboxMed.getChildren().add(0,diabGrid);
+			
+		}
+		else if(yearWithDiabatesComboBox.getValue().equalsIgnoreCase("--Select--"))
+		{
+		GridPane diabGrid=	diabeticGrid(yearWithDiabatesComboBox);
+		vboxMed.getChildren().remove(0);
+		vboxMed.getChildren().add(0,diabGrid);
+		}
+		
+		else if((!yearWithDiabatesComboBox.getValue().equals("Not diabetic")) ||(!yearWithDiabatesComboBox.getValue().equals("--Select--")))
+		{
+			vboxMed.getChildren().remove(0);
+			
+		vboxMed.getChildren().add(0,handleDiabeticInsulinGridPane(yearWithDiabatesComboBox));
+			
+		}
+	
+	});
+	
+	/// insullin vbox
+	
+	insulinVBox = new VBox(5);
+	Label insulinlabel = new Label("Insulin Duration");
+	insulinlabel.setPadding(new Insets(5));
+	ComboBox<String> insulinDependentComboBox = new ComboBox<>();
+	insulinDependentComboBox.setPromptText("Select Insulin Duration");
+	insulinDependentComboBox
+			.setStyle("-fx-border-width: 0;-fx-border-color:white;-fx-background-color: transparent;");
+	insulinDependentComboBox.setPrefSize(240, 5);
+	insulinDependentComboBox.getItems().addAll("--Select--", "Not insulin dependent", "1 year or Less", "2 Years",
+			"3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years", "16-20 Years", "More Than 20 Years");
+	insulinVBox.getChildren().addAll(insulinlabel, insulinDependentComboBox);
+	insulinVBox
+			.setStyle(" -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+	insulinVBox.setVisible(true);
+	diabeticGridPane.add(insulinVBox,0,1);
+	
+	/// diabetic type
+	diabaticTypeVBox = new VBox(5);
+	Label diabeticTypelabel = new Label("Diabetic Type");
+	diabeticTypelabel.setPadding(new Insets(0, 0, 0, 7));
+	ComboBox<String> diabeticTypeComboBox = new ComboBox<>();
+	diabeticTypeComboBox.setStyle("-fx-border-width: 0;-fx-border-color:white;-fx-background-color: transparent;");
+	diabeticTypeComboBox.setPrefSize(240, 5);
+	diabaticTypeVBox.setVisible(true);
+	diabeticTypeComboBox.getItems().addAll("Type-1", "Type-2", "Other");
+	diabeticTypeComboBox.setPromptText("Select Diabetic Type");
+	
+	diabaticTypeVBox.getChildren().addAll(diabeticTypelabel, diabeticTypeComboBox);
+	diabaticTypeVBox
+			.setStyle(" -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+	diabeticGridPane.add(diabaticTypeVBox, 1, 1); // Add StackPane for secondary controls
+	diabeticTypeComboBox.setOnAction(e -> {
+
+		if (diabeticTypeComboBox.getValue().equals("Other")) {
+			diabaticTypeTextfield.setVisible(true);
+		} else {
+			diabaticTypeTextfield.setVisible(false);
+		}
+
+	});
+//	diabeticGridPane.add(diabaticTypeVBox,1,1);	
+	diabaticTypeTextfield = new TextField();
+	diabaticTypeTextfield.setPrefSize(190, 50);
+	diabaticTypeTextfield.setVisible(false);
+	diabaticTypeTextfield.setPromptText("Please Mention Type");
+	diabaticTypeTextfield
+			.setStyle("-fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;-fx-border-radius: 5;");
+	//medicalrecordGridPane.add(diabaticTypeTextfield, 2, 1);
+	diabeticGridPane.add(diabaticTypeTextfield, 2, 1);
+	
+	return diabeticGridPane;
+}
+// 
+
+public static GridPane diabeticGrid(ComboBox<String> comboBox)
+{
+	GridPane alternativeGridPane=new GridPane();
+	alternativeGridPane.setHgap(5);
+	alternativeGridPane.setVgap(5);
+	/// pupil dilation
+
+			VBox vboxForPupilDilation = new VBox();
+			Text redAsterisk = new Text("*");
+			redAsterisk.setFill(Color.RED);
+
+			// Combine the Text node and the rest of the label text
+			String pupilDilationStringLabel = "Pupil Dilation";
+			Label pupilDilationLabel = new Label(pupilDilationStringLabel + " ");
+			// text will be set as the graphic to the label
+			pupilDilationLabel.setGraphic(redAsterisk);
+			// the astrick trext will be put right to the label
+			pupilDilationLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+			pupilDilationLabel.setPadding(new Insets(0, 0, 0, 7));
+			ComboBox<String> pupilDilationComboBox = new ComboBox<>();
+
+			// Add items to the ComboBox
+
+			pupilDilationComboBox.getItems().addAll("-------", "Not Necessary",
+					"Declined (please note reason drop were declined", "1 gtt. tropicamide 0.5 %", "1 gtt. tropicamide 1 %",
+					"Othes Dilating Agents (please note dilating agents used)");
+			pupilDilationComboBox.setValue("------");
+			pupilDilationComboBox.setPrefSize(240, 5);
+			pupilDilationComboBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+			vboxForPupilDilation.getChildren().addAll(pupilDilationLabel, pupilDilationComboBox);
+			vboxForPupilDilation.setStyle(
+					"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+			alternativeGridPane.add(vboxForPupilDilation, 0, 0);
+			
+		//// year of diabates
+			VBox vboxForYearOfDiabates = new VBox();
+			Text yearOfDiabatesRedAstrickdiab = new Text("*");
+			yearOfDiabatesRedAstrickdiab.setFill(Color.RED);
+			String yearWithDibates = " Diabetes";
+			Label yearWithDibatesLabel = new Label(yearWithDibates + " ");
+			yearWithDibatesLabel.setGraphic(yearOfDiabatesRedAstrickdiab);
+			yearWithDibatesLabel.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+			yearWithDibatesLabel.setPadding(new Insets(0, 0, 0, 7));
+			ComboBox<String> yearWithDiabatesComboBox1 = new ComboBox<String>();
+			 yearWithDiabatesComboBox1.setPrefSize(240, 10);
+			yearWithDiabatesComboBox1.getItems().addAll("--Select--", "Not diabetic", "Borderline", "Borderline Diabetic ",
+					"1 year or Less", "2 Years", "3 Years", "4 Years", "5 Years", "6-10 Years", "11-15 Years",
+					"16-20 Years", "More Than 20 Years");
+			yearWithDiabatesComboBox1.setValue(comboBox.getValue());
+		yearWithDiabatesComboBox1.setPrefSize(240, 5);
+
+			yearWithDiabatesComboBox1.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+			vboxForYearOfDiabates.getChildren().addAll(yearWithDibatesLabel, yearWithDiabatesComboBox1);
+			vboxForYearOfDiabates.setStyle(
+					"-fx-background-color: rgba(0, 0, 0, 0); -fx-border-width: 1; -fx-border-color: black; -fx-border-radius: 5;");
+			alternativeGridPane.add(vboxForYearOfDiabates, 1, 0);
+			
+			TextField reasonConsult=new TextField();
+			reasonConsult.setPromptText("Reason For Consultation");
+			//reasonConsult.setVisible(true);
+			reasonConsult.setPrefSize(200, 50);
+			if(comboBox.getValue().equals("Not diabetic"))
+			{
+				reasonConsult.setVisible(true);
+			}
+			
+			else if(comboBox.getValue().equals("--Select--"))
+					{
+				reasonConsult.setVisible(false);
+					}
+			
+			alternativeGridPane.add(reasonConsult, 2,0);
+			yearWithDiabatesComboBox1.setOnAction(e->
+			{
+				
+
+			if((!yearWithDiabatesComboBox1.getValue().equals("Not diabetic")) ||(!yearWithDiabatesComboBox1.getValue().equals("--Select--")))
+			{
+				vboxMed.getChildren().remove(0);
+				
+			vboxMed.getChildren().add(0,handleDiabeticInsulinGridPane(yearWithDiabatesComboBox1));
+				
+			}
+
+				
+			}
+			
+			);
+	
+	return alternativeGridPane;
+}
+
+
+
+
+
+}

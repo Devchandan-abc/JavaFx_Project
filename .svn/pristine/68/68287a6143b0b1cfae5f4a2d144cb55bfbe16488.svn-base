@@ -1,0 +1,303 @@
+package com.autouploader;
+
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
+public class DashBoardResult {
+	private Stage stage;
+
+	public void displayResult(Stage stageForDashBoardResult, BorderPane borderPane, String result, Pane fixedRec,
+			String userName) {
+
+		this.stage = stageForDashBoardResult;
+		VBox mainContentVbox = new VBox(10);
+		VBox resultContent = new VBox(15);
+		resultContent.setPrefSize(520, 550);
+		resultContent.setPadding(new Insets(0, 0, 0, 20));
+		String greeting = generateGreeting(userName);
+		Label greetingLabel = new Label(greeting);
+		greetingLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+//// GETTING TODAYS DATE
+		LocalDate todayDate = LocalDate.now();
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM dd ,yyyy");
+		String date = todayDate.format(dateTimeFormatter);
+
+		// Today's date label
+		Label dateLabel = new Label(date);
+		dateLabel.setStyle("-fx-font-size: 9 px;");
+		HBox greetingHbox = new HBox(16);
+		// Align the dateLabel at the bottom within the HBox
+		HBox.setMargin(dateLabel, new Insets(10, 0, 0, 0)); // Adjust the margin as needed
+
+		greetingHbox.setPadding(new Insets(10, 0, 0, 17));
+		greetingHbox.getChildren().addAll(greetingLabel, dateLabel);
+
+		// Site Statistics section
+		VBox siteStatsBox = siteStatics();
+		// set padding bn the border and vbox
+		siteStatsBox.setPadding(new Insets(10));
+		siteStatsBox.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.5))));
+		//// ALERT SECTION
+		VBox vboxMainAlert = new VBox(5);
+		HBox alertLabelHbox = new HBox(120);
+		alertLabelHbox.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(.1))));
+		HBox alertDetailsHbox = new HBox(15);
+		Label alertLabel = new Label("Alerts");
+		alertLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+		// Image imageForAlertHboxLabel=new
+		// Image("file:/C:/Auto_Uplaoder/down_rectangle.png");
+		// ImageView imaggeFoeAlertHboxImageView=new ImageView(imageForAlertHboxLabel);
+// imaggeFoeAlertHboxImageView.setFitHeight(25);
+		// imaggeFoeAlertHboxImageView.setFitWidth(25);
+		Button btn = new Button();
+		// btn.setPrefSize(20,10);
+		// btn.setPrefHeight(20);
+		ImageView image = new ImageView(new Image("file:/C:/Auto_Uplaoder/downarrow.png"));
+		image.setFitWidth(10);
+		image.setFitHeight(10);
+		HBox hboxContaingbtnandImage = new HBox();
+		// settng the child node at the bottom.
+		hboxContaingbtnandImage.setAlignment(Pos.BOTTOM_LEFT);
+		hboxContaingbtnandImage.getChildren().addAll(btn, image);
+
+		// Set transparent background
+		// btn.setStyle("-fx-background-color: transparent;");
+		btn.setStyle("-fx-background-color: white; -fx-border-color: black; -fx-border-width: .5px;");
+		btn.setOnAction(e -> System.out.println("hello"));
+
+		btn.setPrefWidth(10);
+// alertLabelHbox.getChildren().addAll(alertLabel,imaggeFoeAlertHboxImageView);
+		alertLabelHbox.getChildren().addAll(alertLabel, hboxContaingbtnandImage);
+
+		alertLabelHbox.setPadding(new Insets(5, 5, 5, 5));
+		alertLabelHbox.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(1), new BorderWidths(.8))));
+
+		HBox hbox1 = createAlert("Jan 24", "patients review is done", "uplaod_icon.png");
+		HBox hbox2 = createAlert("Jan 28", "not reviewd", "upload_icon.png");
+		vboxMainAlert.getChildren().addAll(alertLabelHbox, hbox1, hbox2);
+		vboxMainAlert.setPadding(new Insets(5, 5, 5, 5));
+		vboxMainAlert.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(.7))));
+
+		HBox siteStatsAndAlertsBox = new HBox(200);
+
+		siteStatsAndAlertsBox.getChildren().add(siteStatsBox);
+		VBox upcomingAppointmentsTable = createUpcomingAppointmentsTable();
+	
+		resultContent.getChildren().addAll(siteStatsAndAlertsBox, upcomingAppointmentsTable);
+		/// Hbox for the alert and the patients statics and table
+		HBox hboxForsiteStaticsTableandalert = new HBox(100);
+		hboxForsiteStaticsTableandalert.getChildren().addAll(resultContent, vboxMainAlert);
+		// main content
+
+		mainContentVbox.getChildren().addAll(greetingHbox, hboxForsiteStaticsTableandalert);
+
+		fixedRec.getChildren().clear();
+
+		fixedRec.getChildren().add(mainContentVbox);
+
+		// Optional: Print the result to verify its content
+		System.out.println("Result Content: " + result);
+
+	}
+
+	/**
+	 * 
+	 * @param user
+	 * @return the generated based on the user name login
+	 */
+	public String generateGreeting(String user) {
+		// this.userLogin=userLogin;
+
+		String[] userLabel = user.split(" ");
+		StringBuilder sb = new StringBuilder();
+		sb.append(Character.toUpperCase(userLabel[0].charAt(0))).append(userLabel[0].substring(1).toLowerCase());
+
+		// get the Local time
+		LocalTime now = LocalTime.now();
+		int hour = now.getHour();
+
+		if (hour >= 6 && hour < 12) {
+			return "Good Morning ," + sb;
+		} else if (hour >= 12 && hour < 18) {
+			return "Good Afternoon ," + sb;
+
+		} else {
+			return "Good Evening ," + sb;
+		}
+	}
+
+	private VBox siteStatics() {
+		// Create the Site Statistics header (heading and dropdown in the same row)
+		HBox siteStatsHeader = createSiteStatsHeader();
+
+		// Row for patient statistics
+		HBox patientStatsRow = createPatientStatsRow();
+		patientStatsRow.setSpacing(25);
+
+		// Create a VBox to hold patient statistics
+		VBox statsVBox = new VBox(14);
+		statsVBox.getChildren().addAll(siteStatsHeader);
+
+		// Create a VBox to hold the statvbox
+		VBox siteStatsBox = new VBox(15, statsVBox, patientStatsRow);
+		// setting the prefered size of vbox containing the ptint staics recors
+		siteStatsBox.setPrefSize(500, 100);
+		return siteStatsBox;
+	}
+
+	private HBox createAlert(String date, String description, String imageName) {
+		// VBox vboxForalertBox = new VBox(10);
+		HBox hboxForalertdesc = new HBox(10);
+
+		// Date label
+		Label dateLabel = new Label(date);
+		dateLabel.setStyle("-fx-font-weight: bold;");
+
+		// Description label
+		Label descriptionLabel = new Label(description);
+
+		// Image (replace "file:/C:/Auto_Uplaoder/" with your actual image path)
+		ImageView alertImage = new ImageView(new Image("file:/C:/Auto_Uplaoder/" + imageName));
+		alertImage.setFitWidth(25); // Set your desired width
+		alertImage.setFitHeight(25); // Set your desired height
+		// alertDetailsHbox.setAlignment(Pos.CENTER);
+		hboxForalertdesc.getChildren().addAll(dateLabel, descriptionLabel, alertImage);
+		// Add components to the VBox
+		// vboxForalertBox.getChildren().addAll(alertLabelHbox,alertDetailsHbox);
+		return hboxForalertdesc;
+	}
+
+	private HBox createPatientStatsRow() {
+		HBox patientStatsRow = new HBox(30);
+		HBox hbox1 = incrementDecrementPatient("23", 6);
+		HBox hbox2 = incrementDecrementPatient("25", 6);
+		HBox hbox3 = incrementDecrementPatient("27", 7);
+
+		Label label1 = new Label("patient Screened");
+		Label label2 = new Label("Patients Referred");
+		Label label3 = new Label("Patient Encountered");
+
+		VBox vbox1 = new VBox();
+		vbox1.getChildren().addAll(hbox1, label1);
+		VBox vBox2 = new VBox();
+		vBox2.getChildren().addAll(hbox2, label2);
+		VBox vbox3 = new VBox();
+		vbox3.getChildren().addAll(hbox3, label3);
+		patientStatsRow.getChildren().addAll(vbox1, vBox2, vbox3);
+
+		return patientStatsRow;
+	}
+
+	private HBox incrementDecrementPatient(String value, int per) {
+		Label valueLabel = new Label(value);
+// Set the font to bold and increase the font size
+		Font font = Font.font("Arial", FontWeight.BOLD, 24); // You can adjust the font and size here
+		valueLabel.setFont(font);
+
+		Label valueChangeLabel = new Label("+" + (per) + "%");
+		valueChangeLabel.setStyle("-fx-text-fill: green;");
+		HBox changeValueHbox = new HBox(4);
+		// now the child nodes present inside this hbox will be centreed vertically
+		changeValueHbox.setAlignment(Pos.CENTER); // Set alignment to CENTER
+		changeValueHbox.getChildren().addAll(valueLabel, valueChangeLabel);
+		return changeValueHbox;
+	}
+
+	private HBox createSiteStatsHeader() {
+		HBox siteStatsHeader = new HBox(169);
+
+		// Heading for Site Statistics
+		Label headingLabel = new Label("Site Statistics");
+		headingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+		// Dropdown for time period selection
+		ComboBox<String> timePeriodDropdown = new ComboBox<>();
+		timePeriodDropdown.getItems().addAll("This Month", "Last Week");
+		timePeriodDropdown.setStyle("-fx-background-color: transparent;");
+		timePeriodDropdown.setPromptText("select time");
+
+		// Add components to the HBox
+		siteStatsHeader.getChildren().addAll(headingLabel, timePeriodDropdown);
+
+		return siteStatsHeader;
+	}
+
+	private VBox createUpcomingAppointmentsTable() {
+		// Create a VBox to hold the label and the TableView
+		VBox vbox = new VBox(10);
+		vbox.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.5))));
+		vbox.setPadding(new Insets(10));
+
+		// Add a label to indicate upcoming appointments
+		Label label = new Label("Upcoming Appointments");
+		label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+		// Create and populate the TableView with upcoming appointments data
+		TableView<Appointment> appointmentsTable = new TableView<>();
+		// Add columns to the TableView (e.g., Name, Ordering Provider, Date Ordered)
+		TableColumn<Appointment, String> nameColumn = new TableColumn<>("Name");
+		TableColumn<Appointment, String> orderingProviderColumn = new TableColumn<>("Ordering Provider");
+		TableColumn<Appointment, Date> dateOrderedColumn = new TableColumn<>("Date Ordered");
+		TableColumn<Appointment, ImageView> imageUpload = new TableColumn<>("Upload");
+		appointmentsTable.setStyle("-fx-background-color: white");
+		appointmentsTable.getColumns().addAll(nameColumn, orderingProviderColumn, dateOrderedColumn, imageUpload);
+		Image image1 = new Image("file:/C:/Auto_Uplaoder/Help.png");
+		ImageView imageView1 = new ImageView(image1);
+		imageView1.setFitHeight(12);
+		imageView1.setFitWidth(12);
+		Image image2 = new Image("file:/C:/Auto_Uplaoder/right arrow.jfif");
+		ImageView imageView2 = new ImageView(image2);
+		imageView2.setFitWidth(12);
+		imageView2.setFitHeight(12);
+		// Populate the TableView with data (replace this with your actual data)
+		ObservableList<Appointment> imgList = FXCollections.observableArrayList();
+
+		Appointment first = new Appointment("John Doe", "Dr. Smith", new Date(), imageView2);
+		Appointment second = new Appointment("John Doe", "Dr. Smith", new Date(), imageView2);
+		imgList.addAll(first, second);
+		// Add more data as needed
+		nameColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+		orderingProviderColumn
+				.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getOrderingProvider()));
+		dateOrderedColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getOrderedDate()));
+		imageUpload.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getImage()));
+		// Set the column resize policy to constrained
+		appointmentsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		appointmentsTable.setItems(imgList);
+
+		/// Adding patient link  calling the utility methods
+		Button btn=new Button();
+		StackPane plusStackPane=Utilty.addPatientCalled(btn, stage);
+		plusStackPane.setPadding(new Insets (0,0,0,400));
+		// Add the label and the TableView to the VBox
+		vbox.getChildren().addAll(label, appointmentsTable, plusStackPane);
+		return vbox;
+	}
+
+}

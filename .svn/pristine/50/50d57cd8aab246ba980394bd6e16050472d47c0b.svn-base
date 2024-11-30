@@ -1,0 +1,136 @@
+package com.autouploader;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
+
+public class UploadResult {
+    private Pane fixedRectangleStackPane;
+
+    private VBox additionalLayoutVbox; // Declare the VBox for additional details globally
+
+    public void displayUpload(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane) {
+        StackPane uploadStackPane = new StackPane();
+        // Create labels, image, search textbox, and list of patient names
+        Label queueLabel = new Label("Queue");
+        queueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px"); // Set bold and font size
+        ImageView imageViewRefresh = new ImageView(new Image("file:/C:/Auto_Uplaoder/Refresh.png")); // Replace with your image path
+        imageViewRefresh.setFitHeight(13);
+        imageViewRefresh.setFitWidth(13);
+        // Create a colored circle for the background of the "+"
+        Circle refreshCircle = new Circle(10, Color.ORANGE);
+        StackPane refreshStackPane=new StackPane();
+        refreshStackPane.getChildren().addAll(refreshCircle,imageViewRefresh);
+
+
+
+        TextField searchTextField = new TextField();
+        searchTextField.setPromptText("search");
+        // Create an Accordion for the menu items
+        Accordion accordion = createAccordion();
+
+        // Create a colored circle for the background of the "+"
+        Circle plusCircle = new Circle(15, Color.ORANGE);
+        Label addPatientPlusSymbol = new Label("+");
+        addPatientPlusSymbol.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"); // Customize label style
+
+        StackPane plusStackPane = new StackPane(plusCircle, addPatientPlusSymbol);
+        plusStackPane.setPadding(new Insets(200, 0, 0, 100));
+        AddNewPatient addNewPatient=new AddNewPatient();
+        addPatientPlusSymbol.setOnMouseClicked(event-> addNewPatient.handleAddPatient());
+
+        HBox hbox = new HBox(queueLabel, refreshStackPane);
+        hbox.setSpacing(75);
+
+        VBox vboxforPateintLabel = new VBox(40);
+        Label patientLabel = new Label("Dev Kumar"); // Replace with actual patient name
+        Label patientLabel2 = new Label("Raja Kumar"); // Replace with actual patient name
+        Label patentLabel3 = new Label("Sunny Kumar");
+        // Add click event to patient labels
+        patientLabel.setOnMouseClicked(event -> showAdditionalLayout("Dev Kumar"));
+        patientLabel2.setOnMouseClicked(event -> showAdditionalLayout("Raja Kumar"));
+        patentLabel3.setOnMouseClicked(event -> showAdditionalLayout("Sunny Kumar"));
+
+
+        vboxforPateintLabel.getChildren().addAll(patientLabel, patientLabel2, patentLabel3);
+
+        // Create a VBox for search textbox and patient names
+        VBox vboxForMainContent = new VBox(hbox, searchTextField, vboxforPateintLabel, plusStackPane);
+
+        vboxForMainContent.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+        vboxForMainContent.setPadding(new Insets(20));
+        vboxForMainContent.setPrefSize(200, 500);
+        vboxForMainContent.setSpacing(30);
+
+        uploadStackPane.getChildren().add(vboxForMainContent);
+
+        fixedRectangleStackPane.getChildren().clear();
+        fixedRectangleStackPane.getChildren().add(uploadStackPane);
+        StackPane.setMargin(vboxForMainContent, new Insets(10));
+    }
+
+    // Method to show additional layout when a patient label is clicked
+// Method to show additional layout when a patient label is clicked
+    private void showAdditionalLayout(String patientName) {
+        if (additionalLayoutVbox != null) {
+            fixedRectangleStackPane.getChildren().remove(additionalLayoutVbox);
+        }
+
+        additionalLayoutVbox = new VBox();
+        //additionalLayoutVbox.setAlignment(Pos.BOTTOM_RIGHT);
+        additionalLayoutVbox.setSpacing(10);
+
+        Label nameLabel = new Label("Name: " + patientName);
+        Label mrnLabel = new Label("MRN: "); // Replace with actual MRN
+        Label dobLabel = new Label("DOB: "); // Replace with actual DOB
+        Label genderLabel = new Label("Gender: "); // Replace with actual gender
+        Label ethnicityLabel = new Label("Ethnicity: "); // Replace with actual ethnicity
+
+        additionalLayoutVbox.getChildren().addAll(nameLabel, mrnLabel, dobLabel, genderLabel, ethnicityLabel);
+additionalLayoutVbox.setPadding(new Insets(15,0,0,450));
+        // Add additionalLayout to the right side of the stack pane
+        fixedRectangleStackPane.getChildren().addAll(additionalLayoutVbox);
+        //StackPane.setAlignment(additionalLayoutVbox, Pos.CENTER_RIGHT);
+    }
+    // Method to create an Accordion with menu items
+    private Accordion createAccordion() {
+        Accordion accordion = new Accordion();
+
+        // Create TitledPanes for each menu item
+        TitledPane patientDetailsPane = createTitledPane("Patient Details");
+        TitledPane uploadPane = createTitledPane("Upload");
+        TitledPane medicalDetailsPane = createTitledPane("Medical Details");
+
+        accordion.getPanes().addAll(patientDetailsPane, uploadPane, medicalDetailsPane);
+
+        // Set up the click events for each TitledPane
+        patientDetailsPane.setOnMouseClicked(event -> handleMenuClick(patientDetailsPane));
+        uploadPane.setOnMouseClicked(event -> handleMenuClick(uploadPane));
+        medicalDetailsPane.setOnMouseClicked(event -> handleMenuClick(medicalDetailsPane));
+
+        return accordion;
+    }
+
+    // Method to create a TitledPane with a label
+    private TitledPane createTitledPane(String labelText) {
+        Label label = new Label(labelText);
+        TitledPane titledPane = new TitledPane(labelText, new VBox()); // Empty VBox for content
+
+        return titledPane;
+    }
+
+    // Method to handle click events for menu items
+    private void handleMenuClick(TitledPane titledPane) {
+        // Implement your logic here based on the clicked menu item
+        System.out.println("Clicked: " + titledPane.getText());
+    }
+}

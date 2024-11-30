@@ -1,0 +1,1365 @@
+package com.autouploader;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import com.eyepacs.ext.connectors.https.HttpsConnectors;
+import com.eyepacs.ext.connectors.https.HttpsConnectors.RESPONSE;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import ext.eyepacs.encryptor.aes.EyePacsEncryptorAES;
+
+public class UploadResult {
+	private static TitledPane patientDetailsPane;
+	private TitledPane medicalDetailsPane;
+	private static TitledPane uploadTitledPane;
+	private VBox vboxforaccordianandLabel;
+	private VBox vboxforPateintLabel;
+	private VBox vboxForMainContent;
+	private ScrollPane scrollPane;
+	private StackPane uploadStackPane;
+	private Label previouslyClickedLabel;
+	private ImageView validaionimageView;
+	private ImageView uploadImageView;
+	private ImageView medicalImageView;
+	private Rectangle previouslyClickedRectangle;
+	private String userName;
+	private String userPassword;
+	private PersonalDetails personalDetaails;
+	private ComboBox<String> siteComboBoxForUpload;
+	private Map<String, String> siteIdMap;
+	private Map<String, String> siteMapping;
+	private String selectedSiteIdFromSiteCombo;
+	private Button btnForThisMonth;
+	private Button btnForAllTime;
+	private boolean isBtnForAllTimeClicked;
+	private boolean isTodayButtonClicked;
+	private HBox hboxForOrderId;
+	private boolean isChangingProgrammatically;
+	private boolean isProgrammaticClick ;
+
+	public void displayUpload(Stage stage, BorderPane borderPane, String result, Pane fixedRectangleStackPane,
+			String username, String password, ComboBox<String> sitecombo) throws FileNotFoundException {
+		this.userName = username;
+		this.userPassword = password;
+		this.siteComboBoxForUpload = sitecombo;
+		Map<String, String> siteInitialization = initializeSiteComboBox();
+
+		String selectedSiteName = sitecombo.getValue(); // Get the currently selected value from ComboBox
+		// Initialize the site ID based on the selected value from ComboBox
+		selectedSiteIdFromSiteCombo = null;
+		for (Map.Entry<String, String> entry : siteInitialization.entrySet()) {
+			if (entry.getValue().equals(selectedSiteName)) {
+				selectedSiteIdFromSiteCombo = entry.getKey(); // Get the site ID for the selected site name
+				break;
+			}
+		}
+
+		/***
+		 * adding the listner for site value change from the site combobox and updating
+		 * the record based on site changes
+		 */
+		isChangingProgrammatically = false;
+		sitecombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if (previouslyClickedLabel == null) {
+				// Create an alert with OK and Cancel buttons
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.setTitle("Fetch new patient from new site");
+				alert.setHeaderText(null);
+				alert.setContentText("A new patient list will be fetched for the site - '" + newValue
+						+ "'. Do you want to proceed?");
+
+				// Define OK and Cancel buttons
+				ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+				ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(okButton, cancelButton); // Add OK and Cancel buttons to alert
+
+				// Show the alert and wait for user's response
+				Optional<ButtonType> resultForButtonType = alert.showAndWait();
+				if (vboxforaccordianandLabel != null) {
+					if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+						vboxforaccordianandLabel.getChildren().remove(0);
+					}
+				}
+				// Handle user selection
+				if (resultForButtonType.isPresent()) {
+					if (resultForButtonType.get() == okButton) {
+						// OK button was clicked, proceed with fetching the new patient list
+						String selectedSiteNameFromCombo = newValue;
+
+						// Find the corresponding site ID for the selected site name
+						selectedSiteIdFromSiteCombo = null;
+						for (Map.Entry<String, String> entry : siteInitialization.entrySet()) {
+							if (entry.getValue().equals(selectedSiteNameFromCombo)) {
+								selectedSiteIdFromSiteCombo = entry.getKey();
+								break;
+							}
+						}
+
+						if (selectedSiteIdFromSiteCombo != null) {
+							// Update button styles and fetch new patient list
+							btnForThisMonth.setStyle("-fx-background-color:white;-fx-font-weight: bold;");
+							btnForAllTime.setStyle(
+									"-fx-background-color: orange;-fx-border-radius:0;-fx-font-weight: bold;");
+							System.out.println("Selected Site ID from ComboBox: " + selectedSiteIdFromSiteCombo);
+							updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+						} else {
+							System.out.println("No matching site ID found for the selected site name.");
+						}
+
+					}
+				} else {
+					isChangingProgrammatically = true;
+					sitecombo.setValue(oldValue);
+					isChangingProgrammatically = false;
+				}
+			} else {
+				// previouslyClickedLabel is not null, show different message
+				String patientName = previouslyClickedLabel.getText(); // Fetch the patient name dynamically
+
+				// if previouslyclickedlabel not null than making it null so that i can click
+				if (previouslyClickedLabel != null) {
+					previouslyClickedLabel = null;
+				}
+
+				hboxForOrderId.setVisible(false);
+
+				// Show alert with the new message
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.setTitle("Fetch new patient from new site");
+				alert.setHeaderText(null);
+				alert.setHeight(300);
+
+				alert.setContentText("A new patient list will be fetched for the selected site: " + newValue
+						+ ".Any changes made to the details of " + patientName
+						+ " will be discarded. Do you want to proceed ?");
+
+				// Define OK and Cancel buttons
+				ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+				ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(okButton, cancelButton); // Set OK and Cancel buttons
+
+				Optional<ButtonType> siteSelectionResult = alert.showAndWait(); // Show the alert and wait for user's
+																				// response
+				if (vboxforaccordianandLabel != null) {
+					vboxforaccordianandLabel.getChildren().remove(0);
+				}
+				if (siteSelectionResult.isPresent()) {
+					if (siteSelectionResult.get() == okButton) {
+						// Proceed with fetching the new patient list
+						String selectedSiteNameFromCombo = newValue;
+
+						// Find the corresponding site ID for the selected site name
+						selectedSiteIdFromSiteCombo = null;
+						for (Map.Entry<String, String> entry : siteInitialization.entrySet()) {
+							if (entry.getValue().equals(selectedSiteNameFromCombo)) {
+								selectedSiteIdFromSiteCombo = entry.getKey();
+								break;
+							}
+						}
+
+						// If a matching site ID is found, update the selected site ID
+						if (selectedSiteIdFromSiteCombo != null) {
+							// Update button styles
+							btnForThisMonth.setStyle("-fx-background-color:white;-fx-font-weight: bold;");
+							btnForAllTime.setStyle(
+									"-fx-background-color: orange;-fx-border-radius:0;-fx-font-weight: bold;");
+							System.out.println("Selected Site ID from ComboBox: " + selectedSiteIdFromSiteCombo);
+
+							// Call your method using the selected site ID
+							updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+						} else {
+							System.out.println("No matching site ID found for the selected site name.");
+						}
+					} else if (siteSelectionResult.get() == cancelButton) {
+						// User clicked Cancel, revert to the previous value
+						sitecombo.setValue(oldValue);
+					}
+				} else {
+					isChangingProgrammatically = true;
+					sitecombo.setValue(oldValue);
+					isChangingProgrammatically = false;
+				}
+			}
+		});
+		uploadStackPane = new StackPane();
+		Label queueLabel = new Label("Queue");
+		queueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px");
+		ImageView imageViewRefresh = new ImageView(new Image(new FileInputStream("resources/images/Refresh.png")));
+		imageViewRefresh.setFitHeight(13);
+		imageViewRefresh.setFitWidth(13);
+		Button refreshbtn = new Button();
+		refreshbtn.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		refreshbtn.setGraphic(imageViewRefresh);
+		// Create a colored circle for the background of the "+"
+		Circle refreshCircle = new Circle(10, Color.ORANGE);
+		StackPane refreshStackPane = new StackPane();
+		refreshStackPane.getChildren().addAll(refreshCircle, refreshbtn);
+
+		/**
+		 * adding action for the refresh button when it is clicke and the specific
+		 * button is selected
+		 */
+
+		refreshbtn.setOnAction(e -> {
+			if (hboxForOrderId != null) {
+				hboxForOrderId.setVisible(false);
+			}
+			// vboxforaccordianandLabel.getChildren().remove(1);
+
+			int numberOfNewPatients = 0; // This should be dynamically calculated based on your logic
+			// Check if btnForAllTime is selected or true
+			if (isBtnForAllTimeClicked) {
+				System.out.println("refresh button is clicked!");
+				System.out.println(isBtnForAllTimeClicked);
+				numberOfNewPatients = updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+				System.out.println("update patient list is called");
+				System.out.println(isBtnForAllTimeClicked);
+				showPatientRefreshAlert(numberOfNewPatients);
+				if (vboxforaccordianandLabel != null) {
+					// vboxforaccordianandLabel.getChildren().clear();
+					if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+						vboxforaccordianandLabel.getChildren().remove(0);
+					}
+				}
+
+			} else if (isTodayButtonClicked) {
+				System.out.println("refresh button is clicked!");
+				System.out.println(isTodayButtonClicked);
+				numberOfNewPatients = updatePatientListForToday(selectedSiteIdFromSiteCombo);
+				System.out.println("update patient for today list is called");
+				System.out.println(isBtnForAllTimeClicked);
+
+				// Show alert based on the number of new patients
+				showPatientRefreshAlert(numberOfNewPatients);
+				if (vboxforaccordianandLabel != null) {
+					if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+						// vboxforaccordianandLabel.getChildren().clear();
+						vboxforaccordianandLabel.getChildren().remove(0);
+					}
+				}
+			}
+		});
+
+		// button for adding patient
+		Button btnForAddPatient = new Button();
+		StackPane plusStackPane = Utilty.addPatientCalled(btnForAddPatient, stage);
+		plusStackPane.setPadding(new Insets(0, 0, 0, 115));
+		HBox hbox = new HBox(queueLabel, refreshStackPane);
+		hbox.setSpacing(110);
+		scrollPane = new ScrollPane();
+		vboxforPateintLabel = new VBox(30);
+		vboxforPateintLabel.setStyle("-fx-background-color: white;");
+		HBox hboxforsearchTextFieldandImage = new HBox(100);
+		Image searchImageTextBox = new Image(new FileInputStream("resources/images/search.png"));
+		ImageView searchImageView = new ImageView(searchImageTextBox);
+		searchImageView.setFitWidth(10);
+		searchImageView.setFitHeight(10);
+		Button btnContaingSearch = new Button();
+		btnContaingSearch.setGraphic(searchImageView);
+		btnContaingSearch.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+		TextField searchTextField = new TextField();
+		searchTextField.setPromptText(" search ");
+		searchTextField.setStyle("-fx-background-color: transparent; -fx-border-width: 0 0 0 0; ");
+		hboxforsearchTextFieldandImage.setStyle("-fx-border-radius: 2;" + "-fx-border-color: black;");
+		hboxforsearchTextFieldandImage.getChildren().addAll(searchTextField, btnContaingSearch);
+		// Set action on the search button
+		btnContaingSearch.setOnAction(event -> {
+			String searchText = searchTextField.getText();
+			
+			if (!searchText.isEmpty()) {
+				updatePatientListBasedOnSearch(searchText);
+				if (vboxforaccordianandLabel != null)
+					if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+						{
+							vboxforaccordianandLabel.getChildren().remove(0);
+						}
+					}
+				if(previouslyClickedLabel!=null)
+				{
+					previouslyClickedLabel=null;
+				}
+				
+			} else {
+				
+				if (isBtnForAllTimeClicked) {
+				
+					updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+					if (vboxforaccordianandLabel != null)
+						if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+							{
+								vboxforaccordianandLabel.getChildren().remove(0);
+							}
+						}
+					if(previouslyClickedLabel!=null)
+					{
+						previouslyClickedLabel=null;
+					}
+					
+				} else if (isTodayButtonClicked) {
+					
+					updatePatientListForToday(selectedSiteIdFromSiteCombo);
+					if (vboxforaccordianandLabel != null)
+						if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+							{
+								vboxforaccordianandLabel.getChildren().remove(0);
+							}
+						}
+					if(previouslyClickedLabel!=null)
+					{
+						previouslyClickedLabel=null;
+					}
+				} else {
+					
+					updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+					if (vboxforaccordianandLabel != null)
+						if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+							{
+								vboxforaccordianandLabel.getChildren().remove(0);
+							}
+						}
+					if(previouslyClickedLabel!=null)
+					{
+						previouslyClickedLabel=null;
+					}
+				}
+
+			}
+		});
+
+		/*
+		 * textProperty() of the searchTextField. In JavaFX, many properties of UI
+		 * elements are observable, meaning you can register listeners to be notified
+		 * when their values change. The textProperty() of a TextField represents its
+		 * current text content.
+		 */
+		searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue.isEmpty()) {
+				// If search text is cleared, restore the original vbox inside the scroll pane
+				scrollPane.setContent(vboxforPateintLabel);
+			}
+		});
+//		// Add this listener to your searchTextField
+//		searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+//			if (newValue.isEmpty()) {
+//				// If search text is cleared, restore the original VBox
+//				// restoreFullPatientList();
+//				// updatePatientListBasedOnSearch(selectedSiteIdFromSiteCombo);
+//				if (isBtnForAllTimeClicked) {
+//					updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+//					if(previouslyClickedLabel!=null)
+//					{
+//						previouslyClickedLabel=null;
+//					}
+//					if (vboxforaccordianandLabel != null)
+//						if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+//							{
+//								vboxforaccordianandLabel.getChildren().remove(0);
+//							}
+//						}
+//					
+//				} else if (isTodayButtonClicked) {
+//					updatePatientListForToday(selectedSiteIdFromSiteCombo);
+//					if (vboxforaccordianandLabel != null)
+//						if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+//							{
+//								vboxforaccordianandLabel.getChildren().remove(0);
+//							}
+//						}
+//					if(previouslyClickedLabel!=null)
+//					{
+//						previouslyClickedLabel=null;
+//					}
+//
+//				}
+//
+//			} else {
+//				// Call the search method if the text is not empty
+//				updatePatientListBasedOnSearch(newValue);
+//				if(previouslyClickedLabel!=null)
+//				{
+//					previouslyClickedLabel=null;
+//				}
+//				if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+//					{
+//						vboxforaccordianandLabel.getChildren().remove(0);
+//					}
+//				}
+//			}
+//		});
+
+		HBox hboxForPatientFiltering = new HBox();
+		btnForThisMonth = new Button("Show Today's");
+		btnForThisMonth.setStyle(
+				"-fx-background-color: transparent; -fx-border-width: 0 0 0 0; -fx-border-radius:0; -fx-background-radius: 0;-fx-font-weight:bold;");
+		btnForAllTime = new Button("All Patients");
+		btnForAllTime.setStyle("-fx-background-color: orange;-fx-border-radius:0;-fx-font-weight: bold;");
+		hboxForPatientFiltering.getChildren().addAll(btnForThisMonth, btnForAllTime);
+		hboxForPatientFiltering.setMaxWidth(200);
+		isTodayButtonClicked = false;
+		btnForThisMonth.setOnAction(e -> {
+
+			if (previouslyClickedLabel != null) {
+				previouslyClickedLabel = null;
+			}
+
+			if (hboxForOrderId != null) {
+				hboxForOrderId.setVisible(false);
+			}
+
+			String selectedSite = sitecombo.getValue();
+			// Show an alert with OK and Cancel buttons
+			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+			alert.setTitle("Fetch New Patient List");
+			alert.setHeaderText(null);
+			alert.setContentText(
+					"A new patient list will be fetched for the site: '" + selectedSite + "'. Do you want to proceed?");
+
+			// Define OK and Cancel buttons
+			ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+			ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+			alert.getButtonTypes().setAll(okButton, cancelButton); // Set OK and Cancel buttons
+
+			Optional<ButtonType> resultforallTime = alert.showAndWait(); // Show the alert and wait for user's response
+			if (vboxforaccordianandLabel != null)
+				if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+					{
+						vboxforaccordianandLabel.getChildren().remove(0);
+					}
+				}
+			if (resultforallTime.isPresent() && resultforallTime.get() == okButton) {
+				// User clicked OK, proceed with fetching the new patient list
+				btnForThisMonth.setStyle("-fx-background-color: orange;-fx-border-radius:0;-fx-font-weight: bold;");
+				btnForAllTime.setStyle("-fx-background-color:white;-fx-font-weight: bold;");
+				updatePatientListForToday(selectedSiteIdFromSiteCombo);
+				isTodayButtonClicked = !isTodayButtonClicked;
+				isBtnForAllTimeClicked = false;
+				System.out.println(isBtnForAllTimeClicked);
+			} else {
+				// User clicked Cancel or closed the alert
+				System.out.println("Alert was cancelled or closed.");
+			}
+		});
+
+//		isBtnForAllTimeClicked = true; // Assuming you have a flag to track its state
+//		// if the btn color is not orange than only the alert will be called and patirnt
+//		// list will be updated otherwise nothing will happen
+//		btnForAllTime.setOnAction(e -> {
+//
+//			if (previouslyClickedLabel != null) {
+//				previouslyClickedLabel = null;
+//			}
+//
+//		// Check the current style of btnForAllTime
+////	String currentStyle = btnForAllTime.getStyle();
+////			boolean isButtonOrange = currentStyle.contains("-fx-background-color: orange;");
+//
+////	if (!isButtonOrange) {
+//				// Get the currently selected site from the ComboBox
+//				String selectedSite = sitecombo.getValue();
+//				// Show an alert with OK and Cancel buttons
+//				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+//		alert.setTitle("Fetch New Patient List");
+//				alert.setHeaderText(null);
+//				alert.setContentText("A new patient list will be fetched for the site: '" + selectedSite
+//						+ "'. Do you want to proceed?");
+//				if (vboxforaccordianandLabel != null)
+//
+//				{
+//					if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+//						vboxforaccordianandLabel.getChildren().remove(0);
+//					}
+//				}
+//				// Define OK and Cancel buttons
+//				ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+//				ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+//				alert.getButtonTypes().setAll(okButton, cancelButton); // Set OK and Cancel buttons
+//
+//				Optional<ButtonType> resultForAllTime = alert.showAndWait(); // Show the alert and wait for user's
+//																				// response
+//
+//				if (resultForAllTime.isPresent() && resultForAllTime.get() == okButton) {					// User clicked OK, proceed with fetching the new patient list
+//					btnForAllTime.setStyle("-fx-background-color: orange;-fx-border-radius:5;-fx-font-weight: bold;");
+//					btnForThisMonth.setStyle("-fx-background-color:white;-fx-font-weight: bold;");
+//					updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+//					isBtnForAllTimeClicked = true; // Set the flag to true
+//					isTodayButtonClicked = false; // Reset the other flag
+//					System.out
+//							.println("Button for All Time clicked. isBtnForAllTimeClicked: " + isBtnForAllTimeClicked);
+//				} else {
+//					// User clicked Cancel or closed the alert
+//					System.out.println("Alert was cancelled or closed.");
+//				}
+//			
+//			
+//			updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+//	
+//		});
+		 isProgrammaticClick = false;
+
+		btnForAllTime.setOnAction(e -> {
+//		    if (previouslyClickedLabel != null) {
+//		        previouslyClickedLabel = null;
+//		    }
+
+		    // Get the currently selected site from the ComboBox
+		    String selectedSite = sitecombo.getValue();
+// it should not be programaticlly clicked and button of all time not be clicked 
+		    if (!isProgrammaticClick && !isBtnForAllTimeClicked) {
+		        // Show an alert with OK and Cancel buttons
+		        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		        alert.setTitle("Fetch New Patient List");
+		        alert.setHeaderText(null);
+		        alert.setContentText("A new patient list will be fetched for the site: '" + selectedSite
+		                + "'. Do you want to proceed?");
+
+		        if (vboxforaccordianandLabel != null) {
+		            if (!vboxforaccordianandLabel.getChildren().isEmpty()) {
+		                vboxforaccordianandLabel.getChildren().remove(0);
+		            }
+		        }
+
+		        // Define OK and Cancel buttons
+		        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+		        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+		        alert.getButtonTypes().setAll(okButton, cancelButton);
+
+		        Optional<ButtonType> resultForAllTime = alert.showAndWait();
+
+		        if (resultForAllTime.isPresent() && resultForAllTime.get() == okButton) {
+		            proceedWithAllTimeAction(selectedSite);
+		        } else {
+		            // User clicked Cancel or closed the alert
+		            System.out.println("Alert was cancelled or closed.");
+		            return; // Exit the method without updating the patient list
+		        }
+		    } else {
+		        // Programmatic click, proceed without showing the alert
+		        proceedWithAllTimeAction(selectedSite);
+		    }
+		    // if previously clicked label is null than only call this method
+		    if(previouslyClickedLabel==null)
+		    {
+
+		    updatePatientListForAllTime(selectedSiteIdFromSiteCombo);
+		    }
+		});
+
+	// we have setting the isProgrammaticClick =true means it is fired programticlly after that fires bu user click
+		// At the start of your application, use this to fire the button programmatically:
+		isProgrammaticClick = true;
+		btnForAllTime.fire();
+		isProgrammaticClick = false;
+		vboxForMainContent = new VBox(hbox, hboxforsearchTextFieldandImage, hboxForPatientFiltering, scrollPane,
+				plusStackPane);
+		vboxForMainContent.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+		vboxForMainContent.setStyle("-fx-background-color:white");
+		vboxForMainContent.setPadding(new Insets(20));
+		vboxForMainContent.setPrefSize(250, 500);
+		vboxForMainContent.setSpacing(30);
+		uploadStackPane.getChildren().add(vboxForMainContent);
+		StackPane.setMargin(vboxForMainContent, new Insets(10));
+		vboxforaccordianandLabel = new VBox();
+		vboxforaccordianandLabel.setStyle("-fx-background-color:white");
+		vboxforaccordianandLabel.setPadding(new Insets(20, 0, 0, 0));
+		vboxForMainContent.setStyle("-fx-background-color:white");
+		vboxforaccordianandLabel.setPrefSize(750, 550);
+		Label lablelforSelectingpatient = new Label();
+		lablelforSelectingpatient.setPadding(new Insets(250, 0, 0, 300));
+		lablelforSelectingpatient.setText("Select a patient from the Queue to Continue");
+		vboxforaccordianandLabel.getChildren().add(lablelforSelectingpatient);
+		vboxforaccordianandLabel.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(.7))));
+		StackPane stackPaneforLabelAndAccordiaon = new StackPane();
+		stackPaneforLabelAndAccordiaon.getChildren().add(vboxforaccordianandLabel);
+		vboxforaccordianandLabel.setPadding(new Insets(10));
+		stackPaneforLabelAndAccordiaon.setPadding(new Insets(10));
+		HBox hboxForPatientandAccordian = new HBox(15);
+		hboxForPatientandAccordian.getChildren().addAll(uploadStackPane, stackPaneforLabelAndAccordiaon);
+		fixedRectangleStackPane.getChildren().clear();
+		fixedRectangleStackPane.getChildren().add(hboxForPatientandAccordian);
+	}
+	private void proceedWithAllTimeAction(String selectedSite) {
+	    btnForAllTime.setStyle("-fx-background-color: orange;-fx-border-radius:5;-fx-font-weight: bold;");
+	    btnForThisMonth.setStyle("-fx-background-color:white;-fx-font-weight: bold;");
+	    isBtnForAllTimeClicked = true;
+	    isTodayButtonClicked = false;
+	    System.out.println("Button for All Time clicked. isBtnForAllTimeClicked: " + isBtnForAllTimeClicked);
+	}
+	/**
+	 * 
+	 * @param name
+	 * @return Hox containing rectagle indicator and name label
+	 */
+
+	public HBox labelForPatient(String name, String patientId) {
+		// Create a label for the patient's name
+		Label label = new Label(name);
+		// Create a rectangle to indicate the selection
+		Rectangle selectionIndicator = new Rectangle(10, 25); // Width 10, Height 25
+		selectionIndicator.setFill(Color.TRANSPARENT); // Initially transparent
+
+		// Create an HBox to hold both the label and the rectangle
+		HBox labelContainer = new HBox(5); // Spacing of 5 pixels between label and rectangle
+		labelContainer.setAlignment(Pos.CENTER_LEFT);
+		labelContainer.getChildren().addAll(selectionIndicator, label);
+
+		// Action added on clicking the label
+		label.setOnMouseClicked(e -> {
+			// Check if there are unsaved changes
+			if (previouslyClickedLabel != null && !previouslyClickedLabel.equals(label)) {
+				// Show a confirmation alert before proceeding
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.setTitle("Unsaved Changes");
+				alert.setHeaderText(null);
+				alert.setContentText("A new patient will be selected for the site -'" + siteComboBoxForUpload.getValue()
+						+ "'.Any changes made to the details of " + previouslyClickedLabel.getText()
+						+ " will be dicarded.\n Do you want to proceed ?");
+				alert.setHeight(300);
+
+				// A new patient list will be fetched for the site - 'Testing1'. Any changes
+				// made to the details of ${patientName} will be discarded. Do you want to
+				// proceed?
+				ButtonType yesButton = new ButtonType("Yes");
+				ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+				alert.getButtonTypes().setAll(yesButton, noButton);
+
+				Optional<ButtonType> result = alert.showAndWait();
+
+				if (result.isPresent() && result.get() == noButton) {
+					// User chose "No", so do not proceed
+					return;
+				}
+				// User chose "Yes" or closed the alert; proceed with the change
+			}
+
+			// Update the label and rectangle for the currently clicked patient
+			if (previouslyClickedLabel != null) {
+				previouslyClickedLabel.setTextFill(Color.BLACK); // Revert color of previously clicked label
+				previouslyClickedRectangle.setFill(Color.TRANSPARENT); // Hide rectangle of previously clicked patient
+			}
+
+			// Update the label color and rectangle for the currently clicked patient
+			label.setTextFill(Color.ORANGE);
+			selectionIndicator.setFill(Color.ORANGE); // Set the rectangle color to orange
+
+			// Clear the VBox and add the new content
+			vboxforaccordianandLabel.getChildren().clear();
+			// Fetch patient details from the API based on patientId
+			Map<HttpsConnectors.RESPONSE, String> response = getPatientDetails(patientId);
+			System.out.println("response body is" + response);
+			if ("200".equals(response.get(HttpsConnectors.RESPONSE.CODE))) {
+				String responseBody = response.get(HttpsConnectors.RESPONSE.VALUE);
+				System.out.println(responseBody);
+				if (responseBody != null) {
+					try {
+						JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+						String patientName = jsonObject.get("patientName").getAsString();
+						String medicalRecordNumber = jsonObject.get("medicalRecordNumber").getAsString();
+						String ethnicity = jsonObject.get("ethnicity").getAsString();
+						String phone = jsonObject.get("phone").getAsString();
+						String email = jsonObject.get("email").getAsString();
+						String gender = jsonObject.get("gender").getAsString();
+						String birthMonth = jsonObject.get("birthMonth").getAsString();
+						String birthDay = jsonObject.get("birthDay").getAsString();
+						String birthYear = jsonObject.get("birthYear").getAsString();
+						String caseId = jsonObject.get("caseId").getAsString();
+						String orderId = jsonObject.get("orderId").getAsString();
+						vboxforaccordianandLabel.getChildren().add(createAccordion(patientName, medicalRecordNumber,
+								ethnicity, phone, email, gender, birthDay, birthMonth, birthYear, caseId, orderId));
+
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			} else {
+				System.out.println("Failed to retrieve patient details. Response Code: "
+						+ response.get(HttpsConnectors.RESPONSE.CODE));
+			}
+
+			// Update the previously clicked label and rectangle references
+			previouslyClickedLabel = label;
+			previouslyClickedRectangle = selectionIndicator;
+
+			// Expand the patientDetails pane when expanded
+			Platform.runLater(() -> {
+				patientDetailsPane.setExpanded(true);
+			});
+		});
+
+		// Return the HBox containing the label and rectangle
+		return labelContainer;
+	}
+
+	/**
+	 * @param birthYear
+	 * @param birthMonth
+	 * @param birthDay
+	 * @param gender
+	 * @param email
+	 * @param phone
+	 * @param ethnicity
+	 * @param medicalRecordNumber
+	 * @param patientName
+	 * @param name
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+
+	public Accordion createAccordion(String patientName, String medicalRecordNumber, String ethnicity, String phone,
+			String email, String gender, String birthDay, String birthMonth, String birthYear, String caseId,
+			String orderId) throws FileNotFoundException {
+		Accordion accordion = new Accordion();
+		accordion.setStyle("-fx-background-color:#ffffff !important;");
+		Image icon = new Image(new FileInputStream("resources/images/validationImage.png")); // Update the path to your
+		validaionimageView = new ImageView(icon);
+		validaionimageView.setFitHeight(20); // Set desired height
+		validaionimageView.setFitWidth(20); // Set desired width
+		Label titleLabel = new Label("Patient Details");
+		titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;-fx-font-family: 'Arial';");
+		Label orderIdLabel = new Label(orderId);
+		orderIdLabel.setStyle("-fx-font-weight:bold;");
+		Label labelForOrderId = new Label("Order Id:");
+		labelForOrderId.setStyle("-fx-font-weight:bold;");
+		hboxForOrderId = new HBox();
+		hboxForOrderId.setManaged(true);
+		hboxForOrderId.setVisible(true);
+		hboxForOrderId.getChildren().addAll(labelForOrderId, orderIdLabel);
+		HBox hboxContainingOrderIdAndvalidationImage = new HBox();
+		hboxContainingOrderIdAndvalidationImage.getChildren().addAll(hboxForOrderId, validaionimageView);
+		HBox header = new HBox(500, titleLabel, hboxContainingOrderIdAndvalidationImage);
+		header.setPadding(new Insets(7));
+		header.setAlignment(Pos.CENTER_LEFT);
+		header.setStyle("-fx-background-color:#ffffff;");
+		validaionimageView.setVisible(false);
+		patientDetailsPane = new TitledPane();
+		patientDetailsPane.setGraphic(header); // Set custom header
+		patientDetailsPane.setStyle("-fx-background-color: white; -fx-text-fill: black;");
+		patientDetailsPane.setContent(createPatientDetailsForm(patientName, medicalRecordNumber, ethnicity, phone,
+				email, gender, birthDay, birthMonth, birthYear));
+		uploadTitledPane = new TitledPane();
+		Label uploadLabel = new Label("Upload");
+		uploadLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;-fx-font-family: 'Arial';");
+		Image iconForUpload = new Image(new FileInputStream("resources/images/validationImage.png"));
+		uploadImageView = new ImageView(iconForUpload);
+		uploadImageView.setFitHeight(20); // Set desired height
+		uploadImageView.setFitWidth(20); // Set desired width
+		HBox uploadLabelHbOx = new HBox(645, uploadLabel, uploadImageView);
+		uploadLabelHbOx.setPadding(new Insets(7));
+		uploadLabelHbOx.setStyle("-fx-background-color:#ffffff;");
+		header.setAlignment(Pos.CENTER_LEFT);
+		uploadImageView.setVisible(false);
+		uploadTitledPane.setGraphic(uploadLabelHbOx); // Set custom header
+		UploadImages uploadImage = new UploadImages();
+		uploadTitledPane.setContent(uploadImage.createUpload());
+		medicalDetailsPane = new TitledPane();
+		Image iconFormedicalRecord = new Image(new FileInputStream("resources/images/validationImage.png"));
+		medicalImageView = new ImageView(iconFormedicalRecord);
+		medicalImageView.setFitHeight(20); // Set desired height
+		medicalImageView.setFitWidth(20); // Set desired width
+		Label medicalDetailLabel = new Label("Medical Details");
+		medicalDetailLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;-fx-font-family: 'Arial';");
+		HBox medicalDetailsHBox = new HBox(600, medicalDetailLabel, medicalImageView);
+		medicalDetailsHBox.setStyle("-fx-background-color:#ffffff;");
+		medicalImageView.setVisible(false);
+		medicalDetailsHBox.setPadding(new Insets(7));
+		medicalDetailsHBox.setAlignment(Pos.CENTER_LEFT);
+		medicalDetailsPane.setGraphic(medicalDetailsHBox); // Set custom header
+		// gettin gthe medical response
+		Map<RESPONSE, String> medicalResponse = getMedicalRecord(caseId);
+		System.out.println("redical respnse is " + medicalResponse);
+		// if ("200".equals(medicalResponse.get(HttpsConnectors.RESPONSE.CODE))) {
+		String responseBody = medicalResponse.get(HttpsConnectors.RESPONSE.VALUE);
+		System.out.println("medical response body is:" + responseBody);
+		System.out.println(responseBody);
+		JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+		String caseId1 = jsonObject.get("caseId").isJsonNull() ? null : jsonObject.get("caseId").getAsString();
+		System.out.println("Case ID: " + caseId1);
+
+		/*
+		 * Handling null Values: If the element is JsonNull, it assigns null to the
+		 * corresponding variable; otherwise, it converts the value to a String using
+		 * getAsString().
+		 */
+		String medications = jsonObject.get("medications").isJsonNull() ? null
+				: jsonObject.get("medications").getAsString();
+		System.out.println("Medication is " + medications);
+
+		// Safely extract the "hypertension" field
+		String hypertension = jsonObject.get("hypertension").isJsonNull() ? null
+				: jsonObject.get("hypertension").getAsString();
+		System.out.println("Hypertension is " + hypertension);
+		// Safely extract the "otherHistory" field
+		String otherHistory = jsonObject.get("otherHistory").isJsonNull() ? null
+				: jsonObject.get("otherHistory").getAsString();
+		System.out.println("Other history is " + otherHistory);
+
+		// Safely extract the "hemoglobin" field
+		String hemoglobin = jsonObject.get("hemoglobin").isJsonNull() ? null
+				: jsonObject.get("hemoglobin").getAsString();
+		System.out.println("Hemoglobin is " + hemoglobin);
+		String bloodYearMonth = jsonObject.get("bloodDrawMonth").isJsonNull() ? null
+				: jsonObject.get("bloodDrawMonth").getAsString();
+		String bloodYear = jsonObject.get("bloodDrawYear").isJsonNull() ? null
+				: jsonObject.get("bloodDrawYear").getAsString();
+		String cholestrol = jsonObject.get("cholestrol").isJsonNull() ? null
+				: jsonObject.get("cholestrol").getAsString();
+		String triglycerides = jsonObject.get("triglycerides").isJsonNull() ? null
+				: jsonObject.get("triglycerides").getAsString();
+		String subjectiveDiabeticControl = jsonObject.get("subjectiveDiabeticControl").isJsonNull() ? null
+				: jsonObject.get("subjectiveDiabeticControl").getAsString();
+
+		String yearsWithDiabeties = jsonObject.get("yearsWithDiabeties").isJsonNull() ? null
+				: jsonObject.get("yearsWithDiabeties").getAsString();
+		String insulinDependent = jsonObject.get("insulinDependent").isJsonNull() ? null
+				: jsonObject.get("insulinDependent").getAsString();
+		String reasonRetinalConsult = jsonObject.get("reasonRetinalConsult").isJsonNull() ? null
+				: jsonObject.get("reasonRetinalConsult").getAsString();
+		String duration = jsonObject.get("duration").isJsonNull() ? null : jsonObject.get("duration").getAsString();
+		String lastEyeExam = jsonObject.get("lastEyeExam").isJsonNull() ? null
+				: jsonObject.get("lastEyeExam").getAsString();
+		String glaucomaHistory = jsonObject.get("glaucomaHistory").isJsonNull() ? null
+				: jsonObject.get("glaucomaHistory").getAsString();
+		String pregnant = jsonObject.get("pregnant").isJsonNull() ? null : jsonObject.get("pregnant").getAsString();
+		String visualAcuityRight = jsonObject.get("visualAcuityRight").isJsonNull() ? null
+				: jsonObject.get("visualAcuityRight").getAsString();
+		String pinhole = jsonObject.get("pinhole").isJsonNull() ? null : jsonObject.get("pinhole").getAsString();
+
+		String withRx = jsonObject.get("withRx").isJsonNull() ? null : jsonObject.get("withRx").getAsString();
+		String iopRight = jsonObject.get("iopRight").isJsonNull() ? null : jsonObject.get("iopRight").getAsString();
+		String iopLeft = jsonObject.get("iopLeft").isJsonNull() ? null : jsonObject.get("iopLeft").getAsString();
+		String pupilDilation = jsonObject.get("pupilDilation").isJsonNull() ? null
+				: jsonObject.get("pupilDilation").getAsString();
+		System.out.println(pupilDilation);
+		String bloodSugarLevelHigh = jsonObject.get("bloodSugarLevelHigh").isJsonNull() ? null
+				: jsonObject.get("bloodSugarLevelHigh").getAsString();
+		String bloodSugarLevelLow = jsonObject.get("bloodSugarLevelLow").isJsonNull() ? null
+				: jsonObject.get("bloodSugarLevelLow").getAsString();
+		String bloodSugarLevelAvg = jsonObject.get("bloodSugarLevelAvg").isJsonNull() ? null
+				: jsonObject.get("bloodSugarLevelAvg").getAsString();
+		System.out.println(pregnant);
+		System.out.println(yearsWithDiabeties);
+		medicalDetailsPane.setContent(showMedicalDetailsForm(medications, hypertension, otherHistory, hemoglobin,
+				bloodYearMonth, bloodYear, cholestrol, triglycerides, pupilDilation, bloodSugarLevelAvg,
+				bloodSugarLevelHigh, bloodSugarLevelLow, iopLeft, iopRight, visualAcuityRight, glaucomaHistory,
+				reasonRetinalConsult, insulinDependent, yearsWithDiabeties, duration, lastEyeExam,
+				subjectiveDiabeticControl, pregnant, pinhole, withRx));
+		accordion.getPanes().addAll(patientDetailsPane, uploadTitledPane, medicalDetailsPane);
+		uploadTitledPane.setStyle("-fx-background-color:#ffffff");
+		patientDetailsPane.expandedProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue) {
+				// TitledPane is expanded
+				titleLabel.setTextFill(Color.web("#424242")); // Darker grey
+			} else {
+				// TitledPane is collapsed
+				titleLabel.setTextFill(Color.web("#9E9E9E")); // Lighter grey
+			}
+		});
+		medicalDetailsPane.expandedProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue) {
+				medicalDetailLabel.setTextFill(Color.web("#424242")); // Darker grey
+
+			} else {
+				// TitledPane is collapsed
+				medicalDetailLabel.setTextFill(Color.web("#9E9E9E")); // Lighter grey
+			}
+		});
+		uploadTitledPane.expandedProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue) {
+				// TitledPane is expanded
+				uploadLabel.setTextFill(Color.web("#424242")); // Darker grey
+			} else {
+				// TitledPane is collapsed
+				uploadLabel.setTextFill(Color.web("#9E9E9E")); // Lighter grey
+				uploadImageView.setVisible(uploadImage.getImageCount() != 0);
+			}
+		});
+
+		for (TitledPane pane : accordion.getPanes()) {
+			pane.setStyle("-fx-background-color:#ffffff !important;-fx-background:white;");
+			// Set the background color for the content inside each TitledPane
+			pane.getContent().setStyle("-fx-background-color:#ffffff !important;-fx-background:white;");
+		}
+
+		return accordion;
+	}
+
+	/***
+	 * creating a form
+	 * 
+	 * @param birthYear
+	 * @param birthMonth
+	 * @param birthDay
+	 * @param gender
+	 * @param email
+	 * @param phone
+	 * @param ethnicity
+	 * @param medicalRecordNumber
+	 * @param patientName
+	 * 
+	 * @return Grid pane
+	 */
+	private VBox createPatientDetailsForm(String patientName, String medicalRecordNumber, String ethnicity,
+			String phone, String email, String gender, String birthDay, String birthMonth, String birthYear) {
+		VBox personalDetailsVBox = new VBox(3);
+		personalDetaails = new PersonalDetails();
+		GridPane personalGridPane = personalDetaails.personalGridForUpload(patientName, medicalRecordNumber, ethnicity,
+				phone, email, gender, birthDay, birthMonth, birthYear);
+		//// ADDING SUBMIT BUTTON
+		VBox vboxContinueButton = new VBox();
+		Button uploadButton = new Button("CONTINUE");
+		vboxContinueButton.getChildren().add(uploadButton);
+		vboxContinueButton.setAlignment(Pos.CENTER);
+		uploadButton.setPrefSize(550, 30);
+		uploadButton.setStyle("-fx-background-color: orange; " + // Set the background color to orange
+				"-fx-text-fill: white; " + // Set the text color to white
+				"-fx-font-weight: bold; " + // Set the font weight to bold
+				" -fx-border-radius: 10px;" + "-fx-background-radius: 10px;" // Set the border radius (adjust the value
+																				// as needed)
+		);
+		// Set up the button action and validation
+		setupContinueButton(uploadButton, personalDetaails);
+		personalDetailsVBox.getChildren().addAll(personalGridPane, vboxContinueButton);
+		return personalDetailsVBox;
+	}
+
+	/**
+	 * creating medical record form
+	 * 
+	 * @param hemoglobin
+	 * @param otherHistory
+	 * @param hypertension
+	 * @param medications
+	 * @param bloodYear
+	 * @param bloodYearMonth
+	 * @param yearsWithDiabeties
+	 * @param insulinDependent
+	 * @param reasonRetinalConsult
+	 * @param glaucomaHistory
+	 * @param visualAcuityRight
+	 * @param iopRight
+	 * @param iopLeft
+	 * @param bloodSugarLevelLow
+	 * @param bloodSugarLevelHigh
+	 * @param bloodSugarLevelAvg
+	 * @param pupilDilation
+	 * @param triglycerides
+	 * @param cholestrol
+	 * @param lastEyeExam
+	 * @param duration
+	 * @param pregnant
+	 * @param subjectiveDiabeticControl
+	 * @param
+	 * @param iopRight2
+	 * @param withRx
+	 * @param pinhole
+	 * @return gridpane
+	 */
+	private ScrollPane showMedicalDetailsForm(String medications, String hypertension, String otherHistory,
+			String hemoglobin, String bloodYearMonth, String bloodYear, String cholestrol, String triglycerides,
+			String pupilDilation, String bloodSugarLevelAvg, String bloodSugarLevelHigh, String bloodSugarLevelLow,
+			String iopLeft, String iopRight, String visualAcuityRight, String glaucomaHistory,
+			String reasonRetinalConsult, String insulinDependent, String yearsWithDiabeties, String duration,
+			String lastEyeExam, String subjectiveDiabeticControl, String pregnant, String pinhole, String withRx) {
+
+		MedicalDetails medicalDetails = new MedicalDetails();
+		GridPane v1 = medicalDetails.medicalRecordGRidPane(personalDetaails, medications, hypertension, otherHistory,
+				hemoglobin, bloodYearMonth, bloodYear, cholestrol, triglycerides, pupilDilation, bloodSugarLevelAvg,
+				bloodSugarLevelHigh, bloodSugarLevelLow, iopLeft, iopRight, visualAcuityRight, glaucomaHistory,
+				reasonRetinalConsult, insulinDependent, duration, yearsWithDiabeties, lastEyeExam,
+				subjectiveDiabeticControl, pregnant, withRx, pinhole);
+		VBox medVbox = new VBox();
+		Button submitButton = new Button("SUBMIT");
+		submitButton.setPrefSize(500, 35);
+		submitButton.setStyle("-fx-background-color: orange; " + // Set the background color to orange
+				"-fx-text-fill: white; " + // Set the text color to white
+				"-fx-font-weight: bold; " + // Set the font weight to bold
+				"-fx-border-radius: 10;" + "-fx-background-radius:10;" // Set the border radius (adjust the value as
+																		// needed)
+		);
+		
+		submitButton.setOnAction(e -> {
+
+			boolean medidicalDetilsValid = handleSubmit(medicalDetails);
+			if (medidicalDetilsValid) {
+				medicalImageView.setVisible(true);
+			}
+		});
+		GridPane.setColumnSpan(submitButton, 2);
+		medVbox.getChildren().addAll(v1, submitButton);
+		medVbox.setSpacing(5);
+
+		ScrollPane medicalScpane = new ScrollPane(medVbox);
+
+		return medicalScpane;
+	}
+
+	/***
+	 * method to validate the the medical record
+	 * 
+	 * @param medicalDetails
+	 * @return
+	 */
+	private boolean handleSubmit(MedicalDetails medicalDetails) {
+
+		if (medicalDetails.validateMedicalField(medicalDetails)) {
+			return true;
+		}
+		return false;
+
+	}
+
+	/***
+	 * method to call the validating
+	 * 
+	 * @param uploadButton
+	 * @param personalDetaails
+	 */
+
+	public void setupContinueButton(Button uploadButton, PersonalDetails personalDetaails) {
+		uploadButton.setOnAction(event -> {
+			System.out.println("name value is " + Utilty.getNameTextField());
+			System.out.println("mrn value is" + Utilty.getMrnTextField());
+
+			if (personalDetaails.validateFormFields()) {
+				validaionimageView.setVisible(true);
+				patientDetailsPane.setExpanded(false); // Assuming patientDetailsPane is defined elsewhere
+				uploadTitledPane.setExpanded(true); // Assuming uploadTitledPane is defined elsewhere
+			}
+
+		});
+	}
+
+	/***
+	 * method to fetch Patient List for All time based on site id
+	 * 
+	 * @param siteId
+	 * @return
+	 */
+
+	public Map<RESPONSE, String> fetchPatientsForAllTime(String siteId)
+
+	{
+		String credString = new EyePacsEncryptorAES().encryptEyePacsCredentials(userName, userPassword);
+		String apiUrl = "/uploader/patient/list/" + siteId;
+		HttpsConnectors connector = new HttpsConnectors(HttpsConnectors.SERVER.LOCALHOST, apiUrl,
+				HttpsConnectors.METHOD.POST);
+		Map<HttpsConnectors.RESPONSE, String> response = connector.apiConnect("all", credString, "text/plain",
+				"application/json");
+		return response;
+	}
+
+	/***
+	 * method to fetch pateint list for today case
+	 * 
+	 * @param siteId
+	 * @return
+	 */
+
+	public Map<RESPONSE, String> fetchPatientsForToday(String siteId)
+
+	{
+		String credString = new EyePacsEncryptorAES().encryptEyePacsCredentials(userName, userPassword);
+		String apiUrl = "/uploader/patient/list/" + siteId;
+		HttpsConnectors connector = new HttpsConnectors(HttpsConnectors.SERVER.LOCALHOST, apiUrl,
+				HttpsConnectors.METHOD.POST);
+		Map<HttpsConnectors.RESPONSE, String> response = connector.apiConnect("today", credString, "text/plain",
+				"application/json");
+		return response;
+	}
+
+	public ScrollPane getTodayPatientRecord() {
+
+		return scrollPane;
+
+	}
+	
+	
+
+	/**
+	 * get patirnt details based on on the patient id
+	 * 
+	 * @param patientId
+	 * @return Map containg response and response body
+	 */
+	public Map<RESPONSE, String> getPatientDetails(String patientId) {
+		System.out.println("getPatientDetails method called");
+		System.out.println(patientId);
+		String credString = new EyePacsEncryptorAES().encryptEyePacsCredentials(userName, userPassword);
+		System.out.println(selectedSiteIdFromSiteCombo);
+		String apiUrl = "/uploader/patient/id/" + selectedSiteIdFromSiteCombo + "/" + patientId;
+		System.out.println(patientId);
+		HttpsConnectors connector = new HttpsConnectors(HttpsConnectors.SERVER.LOCALHOST, apiUrl,
+				HttpsConnectors.METHOD.POST);
+		Map<HttpsConnectors.RESPONSE, String> response = connector.apiConnect("", credString, "text/plain",
+				"application/json");
+		return response;
+	}
+
+	/***
+	 * method to updatePatientForAllTime based on site id
+	 * 
+	 * @param siteId
+	 */
+
+	private int updatePatientListForAllTime(String siteId) {
+		System.out.println("Selected site ID: " + siteId);
+		vboxforPateintLabel.getChildren().clear();
+		// Fetch the patient data based on the selected filter and siteId
+		Map<HttpsConnectors.RESPONSE, String> response = fetchPatientsForAllTime(siteId);
+		int noOfPatientAdded = 0;
+		System.out.println("updated respnse for all time is " + response);
+		if (response.get(HttpsConnectors.RESPONSE.CODE).equals("200")) {
+			String responseBody = response.get(HttpsConnectors.RESPONSE.VALUE);
+			System.out.println(responseBody);
+			if (responseBody != null) {
+				try {
+					// Parse the JSON response
+					JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+
+					// Iterate over the entries in the JSON object
+					for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+						String patientId = entry.getKey(); // Get the patient ID
+						String patientName = entry.getValue().getAsString(); // Get the patient name
+						// Create a label for each patient
+						HBox patientLabel = labelForPatient(patientName, patientId);
+
+						// Add the patient label to the VBox
+						vboxforPateintLabel.getChildren().add(patientLabel);
+						noOfPatientAdded++;
+
+					}
+
+					// Update the ScrollPane content
+					scrollPane.setContent(vboxforPateintLabel);
+					scrollPane.setStyle("-fx-background-color: white; -fx-background: white;");
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("Response body is null.");
+			}
+		} else {
+			System.out
+					.println("Failed to retrieve data. Response Code: " + response.get(HttpsConnectors.RESPONSE.CODE));
+		}
+		return noOfPatientAdded;
+	}
+
+	/**
+	 * method to get the updated list for today
+	 * 
+	 * @param siteId
+	 */
+
+	private int updatePatientListForToday(String siteId) {
+		System.out.println("Selected site for upload: " + siteId);
+		// Clear the existing labels
+		vboxforPateintLabel.getChildren().clear();
+		int noOfNewPatientAddedForTodayCase = 0;
+		// Fetch the patient data based on the selected filter and siteId
+		Map<HttpsConnectors.RESPONSE, String> response = fetchPatientsForToday(siteId);
+		System.out.println(response);
+
+		if (response.get(HttpsConnectors.RESPONSE.CODE).equals("200")) {
+			String responseBody = response.get(HttpsConnectors.RESPONSE.VALUE);
+			System.out.println(responseBody);
+			if (responseBody != null) {
+				try {
+					// Parse the JSON response
+					JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+
+					// Iterate over the entries in the JSON object
+					for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+						String patientId = entry.getKey(); // Get the patient ID
+						String patientName = entry.getValue().getAsString(); // Get the patient name
+
+						// Create a label for each patient
+						HBox patientLabel = labelForPatient(patientName, patientId);
+
+						// Add the patient label to the VBox
+						vboxforPateintLabel.getChildren().add(patientLabel);
+						noOfNewPatientAddedForTodayCase++;
+					}
+					// Update the ScrollPane content
+					scrollPane.setContent(vboxforPateintLabel);
+					scrollPane.setStyle("-fx-background-color: white; -fx-background: white;");
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("Response body is null.");
+			}
+		} else {
+			System.out
+					.println("Failed to retrieve data. Response Code: " + response.get(HttpsConnectors.RESPONSE.CODE));
+		}
+		return noOfNewPatientAddedForTodayCase;
+	}
+
+	/**
+	 * method to get the medical record based on caseId
+	 * 
+	 * @return Map of response and response body
+	 */
+	public Map<RESPONSE, String> getMedicalRecord(String caseId) {
+
+		// Construct the API URL with the dynamic siteId
+		String apiUrl = "/uploader/patient/case/" + caseId;
+		String credString = new EyePacsEncryptorAES().encryptEyePacsCredentials(userName, userPassword);
+		HttpsConnectors connector = new HttpsConnectors(HttpsConnectors.SERVER.LOCALHOST, apiUrl,
+				HttpsConnectors.METHOD.POST);
+		Map<HttpsConnectors.RESPONSE, String> response = connector.apiConnect("", credString, "text/plain",
+				"application/json");
+		return response;
+	}
+
+	/**
+	 * method to fetch the site based on user name and password provided
+	 * 
+	 * @param userName
+	 * @param password
+	 * @return
+	 */
+
+	public Map<RESPONSE, String> getSite(String userName, String password) {
+		System.out.println(userName);
+		System.out.println(password);
+		// Encrypt credentials
+		EyePacsEncryptorAES encryptor = new EyePacsEncryptorAES();
+		String credentialString = encryptor.encryptEyePacsCredentials(userName, password);
+
+		// Initialize HttpsConnectors
+		HttpsConnectors connector = new HttpsConnectors(HttpsConnectors.SERVER.LOCALHOST, "uploader/auth/sites",
+				HttpsConnectors.METHOD.POST);
+
+		// Call the API
+		Map<HttpsConnectors.RESPONSE, String> response = connector.doLogin(credentialString, "text/plain",
+				"application/json");
+		return response;
+
+	}
+
+	/***
+	 * method to initialize the sitecombobox
+	 * 
+	 * @return
+	 */
+
+	public Map<String, String> initializeSiteComboBox() {
+		Map<HttpsConnectors.RESPONSE, String> response = getSite(userName, userPassword);
+		siteMapping = new HashMap<>();
+		String responseBody = response.get(HttpsConnectors.RESPONSE.VALUE);
+		System.out.println("Response Body: " + responseBody);
+
+		try {
+			JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+			for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+				String siteId = entry.getKey(); // Get the site ID
+				String siteName = entry.getValue().getAsString(); // Get the site name
+				siteMapping.put(siteId, siteName); // Store in siteIdMap
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return siteMapping;
+	}
+
+	/***
+	 * method to show the alert for refresh button is clicked
+	 * 
+	 * @param numberOfNewPatients
+	 */
+	private void showPatientRefreshAlert(int numberOfNewPatients) {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("Patient List Refreshed");
+		alert.setHeaderText(null);
+
+		if (numberOfNewPatients > 0) {
+			alert.setContentText("Patient list refreshed. Found " + numberOfNewPatients + " new patients.");
+		} else {
+			alert.setContentText("Patient list refreshed. No new patients found.");
+		}
+		alert.showAndWait(); // Show the alert
+	}
+
+	/***
+	 * method to update List Based On SearchText
+	 * 
+	 * @param searchText
+	 * @return Vbox containg the searched hbox
+	 */
+	private VBox updatePatientListBasedOnSearch(String searchText) {
+		System.out.println("updatePatientListBasedOnSearch method is called");
+
+		// Create a temporary list to store the matching HBoxes
+		List<HBox> matchingHBoxes = new ArrayList<>();
+
+		// Clean up the search text by trimming and removing unnecessary characters like
+		// ,
+		String cleanSearchText = searchText.trim().replaceAll("[,\\s]+", "").toLowerCase();
+		System.out.println("Cleaned Search text: " + cleanSearchText);
+
+		// Check if the cleaned search text is not empty
+		if (!cleanSearchText.isEmpty()) {
+
+			// Iterate through all HBox elements in the original VBox
+			for (Node node : vboxforPateintLabel.getChildren()) {
+				if (node instanceof HBox) {
+					HBox hbox = (HBox) node;
+
+					// Assume that the second child of HBox is the Label
+					if (!hbox.getChildren().isEmpty() && hbox.getChildren().get(1) instanceof Label) {
+						Label label = (Label) hbox.getChildren().get(1);
+						System.out.println("Label text: " + label.getText());
+						// Clean up the label text similarly to the search text
+						String cleanLabelText = label.getText().trim().replaceAll("[,\\s]+", "").toLowerCase();
+
+						// Perform the comparison
+						if (cleanLabelText.contains(cleanSearchText)) {
+							// Add matching HBox to the temporary list
+							matchingHBoxes.add(hbox);
+							System.out.println("Added to results: " + label.getText());
+						}
+					}
+				}
+			}
+
+			// Clear the original VBox and add the filtered HBoxes to the results VBox
+			vboxforPateintLabel.getChildren().clear();
+			vboxforPateintLabel.getChildren().addAll(matchingHBoxes);
+
+		} else {
+			// If the search text is empty, restore the original VBox
+			scrollPane.setContent(vboxforPateintLabel);
+			System.out.println("Search text is empty, restoring original VBox.");
+		}
+
+		// Return the filtered VBox
+		return vboxforPateintLabel;
+	}
+
+}

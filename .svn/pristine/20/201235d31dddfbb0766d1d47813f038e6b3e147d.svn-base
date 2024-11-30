@@ -1,0 +1,73 @@
+package com.autouploader;
+import javafx.scene.control.Button;
+import javafx.scene.image.ImageView;
+
+import java.util.Date;
+
+public class Appointment {
+    private String name;
+    private String orderingProvider;
+
+    private Date orderedDate;
+   // private ImageView image;
+    private Button btn;
+    public Appointment(String name, String orderingProvider, Date orderedDate, Button btn) {
+        this.name = name;
+        this.orderingProvider = orderingProvider;
+        this.orderedDate = orderedDate;
+        this.btn = btn;
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getOrderingProvider() {
+        return orderingProvider;
+    }
+
+    public void setOrderingProvider(String orderingProvider) {
+        this.orderingProvider = orderingProvider;
+    }
+
+    public Date getOrderedDate() {
+        return orderedDate;
+    }
+
+    public void setOrderedDate(Date orderedDate) {
+        this.orderedDate = orderedDate;
+    }
+
+//    public ImageView getImage() {
+//        return image;
+//    }
+//
+//    public void setImage(ImageView image) {
+//        this.image = image;
+//    }
+	public Button getBtn() {
+		return btn;
+	}
+
+	public void setBtn(Button btn) {
+		this.btn = btn;
+	}
+
+  
+
+
+
+	
+
+  
+
+}
+
+
+
+
+
+

@@ -1,0 +1,413 @@
+package com.autouploader;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.eyepacs.ext.connectors.https.HttpsConnectors;
+import com.eyepacs.ext.connectors.https.HttpsConnectors.RESPONSE;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import ext.eyepacs.encryptor.aes.EyePacsEncryptorAES;
+import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+
+public class Login extends Application {
+	private ComboBox<String> siteComboBox;
+//private SearchableComboBox<T> siteComboBox;
+	private Button submitButton;
+	private VBox root;
+	private Button loginButton;
+	private Hyperlink forgetPasswordLink;
+	private TextField userNameField;
+	private PasswordField passwordField;
+	public Properties propertyForSiteComboBox = new Properties();
+	private VBox vboxForSiteAndlabel;
+	private HBox hboxForsubmitAndLogin;
+	private HBox usernameHBox;
+	private HBox passwordHBox;
+	private ImageView eyepacslogo;
+	private final String defaultValue = "--Select site--";
+	private Screen screen;
+	private ObservableList<String> items;
+	private Label loginerror;
+
+	public static void main(String[] args) {
+		launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		// Create a StackPane to enclose the content
+		StackPane stackPane = new StackPane();
+		// Create a Rectangle as the background
+		Rectangle background = new Rectangle(400, 400); // Set your desired dimensions
+		background.setFill(Color.WHITE);
+		root = new VBox(22);
+		eyepacslogo = new ImageView(new Image(new FileInputStream("resources/images/eyepacslogo.png.png")));
+		eyepacslogo.setFitWidth(140);
+		eyepacslogo.setFitHeight(50);
+		 screen = Screen.getPrimary();
+
+		// Create the username field with icon
+		usernameHBox = new HBox(12);
+		
+		 double screenWidthPOfUserName = screen.getVisualBounds().getWidth();
+		usernameHBox.setPadding(new Insets(0, 0, 0, screenWidthPOfUserName*.42));
+		ImageView userIcon = new ImageView(new Image(new FileInputStream("resources/images/user.png.png")));
+		userIcon.setFitHeight(20);
+		userIcon.setFitWidth(20);
+		userNameField = new TextField();
+		userNameField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		userNameField.setPromptText("Username");
+		ObservableList<Node> children = usernameHBox.getChildren();
+		children.addAll(userIcon, userNameField);
+		// Create the password field with icon
+		passwordHBox = new HBox(10);
+		
+	        double screenWidthPOfPassword = screen.getVisualBounds().getWidth();
+	       // double screenHeight = screen.getVisualBounds().getHeight();
+
+	        // Calculate padding as percentage of screen width (for example, 20% from the left)
+	        double percentagePadding = 0.42 * screenWidthPOfPassword; // 20% padding
+
+	        // Apply the padding to the HBox
+	        passwordHBox.setPadding(new Insets(0, 0, 0, percentagePadding));
+		//passwordHBox.setPadding(new Insets(0, 0, 0, 505));
+
+		ImageView passwordIcon = new ImageView(new Image(new FileInputStream("resources/images/pass-icon.png.jpg")));
+		passwordIcon.setFitWidth(20); // Set your desired width
+		passwordIcon.setFitHeight(20); // Set your desired height
+		passwordField = new PasswordField();
+		passwordField.setPromptText("Password");
+		passwordField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+		loginButton = new Button("Submit");
+		Button cancelButton = new Button("Cancel");
+		loginerror=new Label("Invalid username or password");
+		loginerror.setVisible(false);
+		loginerror.setManaged(false);
+
+		loginButton.setPrefSize(120, 25);
+		cancelButton.setPrefSize(70, 25);
+		HBox loginHbox = new HBox(3);
+		loginHbox.getChildren().addAll(loginButton, cancelButton);
+
+		loginButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;"); // Orange color
+		forgetPasswordLink = new Hyperlink("Forgot your password ?");
+		forgetPasswordLink.setStyle("-fx-underline: true;");
+		passwordHBox.getChildren().addAll(passwordIcon, passwordField, forgetPasswordLink);
+		stackPane.getChildren().addAll(background, root); // Add the Rectangle and VBox to the StackPane
+
+		root.getChildren().addAll(eyepacslogo,loginerror, usernameHBox, passwordHBox, loginButton, forgetPasswordLink);
+		// positionling on top from the vertical and horizom
+		root.setAlignment(Pos.CENTER);
+
+		loginButton.setOnAction(event -> {
+			try {
+				handleLogin(userNameField.getText(), passwordField.getText(), primaryStage);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+
+		// Get the screen bounds
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+		// Calculate the width and height as 90% of the screen size
+		double width = screenBounds.getWidth() * 0.99;
+		double height = screenBounds.getHeight() * 0.99;
+		// Set up the scene
+		Scene scene = new Scene(stackPane, width, height);
+		primaryStage.setScene(scene);
+		primaryStage.show();// show the stage
+
+	}
+
+	/***
+	 * 
+	 * @param s1
+	 * @param userPassword
+	 * @param primaryStage
+	 * @throws IOException handling the login and creating the site section
+	 */
+
+	public void handleLogin(String userName, String userPassword, Stage primaryStage) throws IOException {
+	    // Fetch site data from API
+	    Map<HttpsConnectors.RESPONSE, String> response = getSite(userName, userPassword);
+	    // Check if response contains valid data
+	    if (response.get(HttpsConnectors.RESPONSE.CODE).equals("200")) {
+	        // Process the response
+	    	// String responseBody = response.values().iterator().next();
+	    	String responseBody=response.get(HttpsConnectors.RESPONSE.VALUE);
+	    	System.out.println(responseBody);
+
+	        if (responseBody != null) {
+	            // Parse the JSON to extract site names
+	            try {
+	                JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();    
+
+	                // Create an observable list for site names
+					ObservableList<String> items = FXCollections.observableArrayList();
+					  for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+					        String siteId = entry.getKey();          // Get the site ID (key)
+					        String siteName = entry.getValue().getAsString();  // Get the site name (value)
+					        
+					        // Optionally, print or log the siteId and siteName
+					        System.out.println("Site ID: " + siteId + ", Site Name: " + siteName);
+
+					        // Add the site name to the items list
+					        items.add(siteName);
+					    }
+					
+
+					// Add default item
+					//items.add(0, "--Select site--");
+
+					// Pass site data to createSiteSection
+					VBox vbox = createSiteSection(primaryStage,userName, items);
+					root.getChildren().removeAll(loginButton, forgetPasswordLink);
+					root.getChildren().add(vbox);
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+	        } else {
+	            System.out.println("Response body is null.");
+	        }
+	    } else {
+
+	    	loginerror.setVisible(true);
+	    	loginerror.setManaged(true);
+	    	loginerror.setStyle("-fx-text-fill:red");
+	    	userNameField.setStyle("-fx-border-color:red;-fx-border-radius:5;");
+	    	passwordField.setStyle("-fx-border-color:red;-fx-border-radius:5;");
+	    	
+	    }
+	}
+
+//	public List<String> getSite(JsonObject jsonObject)
+//	{
+//		List<String> list=new ArrayList<>();
+//		
+//		return list;
+//	}
+	  // Iterate over the entries of the jsonObject
+  
+
+	/**
+	 * 
+	 * @param stage
+	 * @param s1
+	 * @return vbox
+	 * 
+	 *         creating the site section if user enter the correct credentials
+	 */
+	private VBox createSiteSection(Stage stage,String userName,ObservableList<String> siteItems) {
+		
+		VBox vboxForsiteAndButton = new VBox(10);
+		vboxForSiteAndlabel = new VBox(10);
+
+		vboxForSiteAndlabel.setAlignment(Pos.CENTER);
+
+		// Original list of items
+//		 items= FXCollections.observableArrayList("--Select site--", "Testing-site1",
+//				"Testing-site2", "Medanta", "Eyepacs", "Appolo", "Fortis", "eyecare", "eyesite", "site-2",
+//				"cite-testing-3", "testing-4");
+		items=siteItems;
+
+		siteComboBox = new ComboBox<>(items);
+
+		siteComboBox.setValue(defaultValue);
+		siteComboBox.setEditable(true); // Set editable to allow text input
+
+		vboxForSiteAndlabel.getChildren().add(siteComboBox);
+
+		TextField editor = siteComboBox.getEditor();
+
+		editor.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+			String input = editor.getText();
+			int caretPosition = editor.getCaretPosition(); // Save the caret position
+
+			if (input.isEmpty()) {
+				siteComboBox.setItems(items);
+			} else {
+				ObservableList<String> filteredItems = FXCollections.observableArrayList();
+				for (String item : items) {
+					if (item.toLowerCase().contains(input.toLowerCase())) {
+						filteredItems.add(item);
+					}
+				}
+				siteComboBox.setItems(filteredItems);
+				siteComboBox.show();
+			}
+
+			editor.setText(input); // Reset the text
+			editor.positionCaret(caretPosition); // Restore the caret position
+			adjustComboBoxHeight(siteComboBox);
+		});
+
+		// Update TextField when ComboBox selection changes
+		siteComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				editor.setText(newValue);
+				editor.positionCaret(newValue.length()); // Move the caret to the end
+			}
+		});
+
+		// Show ComboBox dropdown when TextField is clicked
+		editor.setOnMouseClicked(event -> {
+			if (siteComboBox.getValue().equals(defaultValue)) {
+				// Remove default value from editor
+				editor.setText("");
+				siteComboBox.show();
+
+			}
+
+		});
+
+		// setting an action for site combo box
+
+		siteComboBox.setOnAction(e -> {
+
+			Utilty.settingSaving(propertyForSiteComboBox, siteComboBox.getValue(), "selectedsite");
+
+		});
+
+		submitButton = new Button("Login");
+		submitButton.setPrefSize(120, 25);
+		Button cancelButton = new Button("Cancel");
+		cancelButton.setPrefSize(120, 25);
+		cancelButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+		submitButton.setStyle("-fx-background-color: #FFA500; -fx-text-fill: white;");
+
+		hboxForsubmitAndLogin = new HBox(4);
+		hboxForsubmitAndLogin.getChildren().addAll(submitButton, cancelButton);
+		hboxForsubmitAndLogin.setAlignment(Pos.CENTER);
+// root.getChildren().addAll(siteLabel,siteComboBox,submitButton);   
+		vboxForsiteAndButton.getChildren().addAll(vboxForSiteAndlabel, hboxForsubmitAndLogin);
+		vboxForsiteAndButton.setSpacing(30);
+		vboxForsiteAndButton.setAlignment(Pos.CENTER);
+
+		/**
+		 * setting action for submit button
+		 */
+		submitButton.setOnAction(e -> {
+			try {
+				handleSubmit(stage,userName);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		});
+		cancelButton.setOnAction(e -> {
+
+			resetLoginForm();
+
+		});
+
+		return vboxForsiteAndButton;
+	}
+
+	/**
+	 * 
+	 * @param stage
+	 * @param username
+	 * @throws IOException handling the submit if credential are correct
+	 */
+	private void handleSubmit(Stage stage, String username) throws IOException {
+		// Check if the user has selected a site
+		String selectedSite = siteComboBox.getValue();
+		if (selectedSite.equals(defaultValue) || !siteComboBox.getItems().contains(selectedSite)) {
+			// Show an error alert if no site is selected
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Site Selection Error");
+			alert.setHeaderText(null);
+			alert.setContentText("Please select a site before proceeding.");
+			alert.showAndWait();
+			return; // Prevent further action
+		}
+
+		// Create a new Stage for the dashboard
+		Stage dashboardStage = new Stage();
+		// Create the dashboard instance
+		Dashboard dashboard = new Dashboard();
+		System.out.println(dashboard);
+		// Open the dashboard with the new Stage
+		dashboard.OpenDashBoard(dashboardStage, username,items);
+
+		// Close the login stage
+		stage.close();
+
+	}
+
+	private void adjustComboBoxHeight(ComboBox<String> comboBox) {
+		// Calculate and set the height of the popup to ensure all items are visible
+		// without scrolling
+		comboBox.setVisibleRowCount(Math.min(comboBox.getItems().size(), 10)); // Adjust the number 10 as needed
+	}
+
+	private void resetLoginForm() {
+
+		root.getChildren().clear();
+
+		userNameField.setEditable(true);
+		passwordField.setEditable(true);
+		root.getChildren().addAll(eyepacslogo, usernameHBox, passwordHBox, loginButton, forgetPasswordLink);
+	}
+	public Map<RESPONSE, String> getSite(String userName,String password) {
+		System.out.println(userName);
+		System.out.println(password);
+		// Encrypt credentials
+	    EyePacsEncryptorAES encryptor = new EyePacsEncryptorAES();
+	    String credentialString = encryptor.encryptEyePacsCredentials(userName, password);
+
+	    // Initialize HttpsConnectors
+	    HttpsConnectors connector = new HttpsConnectors(
+	        HttpsConnectors.SERVER.LOCALHOST, "uploader/auth/sites", HttpsConnectors.METHOD.POST);
+
+
+	        // Call the API
+	        Map<HttpsConnectors.RESPONSE, String> response = connector.doLogin(
+	            credentialString, "text/plain", "application/json");
+	        return response;
+	        
+	}
+	
+
+        
+        
+
+
+}
+
+
